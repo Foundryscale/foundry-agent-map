@@ -1,0 +1,72 @@
+{
+  "name": "GRID Dashboard — Chat Agent Proxy",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "grid-chat",
+        "responseMode": "responseNode",
+        "options": {
+          "allowedOrigins": "*"
+        }
+      },
+      "id": "chat-webhook",
+      "name": "Chat Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [250, 300],
+      "webhookId": "grid-chat"
+    },
+    {
+      "parameters": {
+        "jsCode": "// ============================================================\n// GRID Chat Agent Proxy — Calls Anthropic Claude API\n// Uses this.helpers.httpRequest (verified working in n8n Cloud)\n// ============================================================\n\nvar CHAT_TOKEN = 'grid_fndry_7kX9mP2qR4wL';\nvar ANTHROPIC_API_KEY = 'YOUR_ANTHROPIC_API_KEY';\n\n// --- PARSE BODY ---\nvar body = $input.first().json.body || $input.first().json;\n\n// --- TOKEN VALIDATION ---\nif (!body.token || body.token !== CHAT_TOKEN) {\n  return [{ json: { error: 'Unauthorized', code: 401 } }];\n}\n\nvar message = body.message || '';\nvar conversationHistory = body.conversationHistory || [];\nvar dashboardContext = body.dashboardContext || {};\n\nif (!message.trim()) {\n  return [{ json: { error: 'Empty message', code: 400 } }];\n}\n\n// --- BUILD SYSTEM PROMPT ---\nvar systemPrompt = 'You are the GRID Agent, the AI command assistant for FoundryScale\\'s Agent Engine dashboard called THE GRID. '\n  + 'You help operators understand pipeline status, agent health, sprint velocity, blockers, and priorities.\\n\\n'\n  + 'THE GRID manages AI agents across 6 operational layers:\\n'\n  + '- 01 ARCHITECT: Agent registry, design blueprints, deployed agent catalog\\n'\n  + '- 02 BUILDER: Build pipeline — agents currently being built, shipped, or in backlog\\n'\n  + '- 03 VALIDATOR: Review queue and system health checks for quality assurance\\n'\n  + '- 04 PM: Sprint board, backlog management, weekly executive planning\\n'\n  + '- 05 SCOUT: Research queue, competitive intelligence, trend monitoring\\n'\n  + '- 06 LIBRARIAN: Knowledge base, documentation, reference materials\\n\\n'\n  + 'Task statuses: shipped, building, in progress, backlog, open, concept, in review, done, closed.\\n'\n  + 'Priorities: urgent, high, normal, low.\\n\\n';\n\n// --- INJECT LIVE DASHBOARD DATA ---\nif (dashboardContext && dashboardContext.available) {\n  systemPrompt += '=== CURRENT DASHBOARD STATE (LIVE DATA) ===\\n';\n  var stats = dashboardContext.stats || {};\n  systemPrompt += 'Total Agents Registered: ' + (stats.totalAgents || 0) + '\\n';\n  systemPrompt += 'Shipped: ' + (stats.shipped || 0) + '\\n';\n  systemPrompt += 'Currently Building: ' + (stats.building || 0) + '\\n';\n  systemPrompt += 'Backlog: ' + (stats.backlog || 0) + '\\n';\n  systemPrompt += 'Sprint: ' + (stats.sprintActive || 0) + ' active, ' + (stats.sprintShipped || 0) + ' shipped of ' + (stats.sprintTotal || 0) + ' total\\n';\n  systemPrompt += 'Content Pipeline: ' + (stats.contentPipeline || 0) + ' items\\n\\n';\n\n  if (dashboardContext.buildPipeline && dashboardContext.buildPipeline.length > 0) {\n    systemPrompt += 'BUILD PIPELINE TASKS:\\n';\n    for (var i = 0; i < dashboardContext.buildPipeline.length; i++) {\n      var t = dashboardContext.buildPipeline[i];\n      systemPrompt += '- ' + t.name + ' [' + t.status + ']';\n      if (t.priority) systemPrompt += ' (Priority: ' + t.priority + ')';\n      systemPrompt += '\\n';\n    }\n    systemPrompt += '\\n';\n  }\n\n  if (dashboardContext.recentActivity && dashboardContext.recentActivity.length > 0) {\n    systemPrompt += 'RECENT ACTIVITY:\\n';\n    for (var j = 0; j < dashboardContext.recentActivity.length; j++) {\n      var a = dashboardContext.recentActivity[j];\n      systemPrompt += '- ' + a.name + ' [' + a.status + ']\\n';\n    }\n    systemPrompt += '\\n';\n  }\n\n  if (dashboardContext.layerSummary) {\n    var ls = dashboardContext.layerSummary;\n    systemPrompt += 'LAYER SUMMARY:\\n';\n    if (ls.architect) systemPrompt += '- Architect: ' + (ls.architect.count || 0) + ' agents registered\\n';\n    if (ls.builder) systemPrompt += '- Builder: ' + (ls.builder.building || 0) + ' building, ' + (ls.builder.shipped || 0) + ' shipped, ' + (ls.builder.backlog || 0) + ' backlog\\n';\n    if (ls.validator) systemPrompt += '- Validator: ' + (ls.validator.reviewQueue || 0) + ' in review, ' + (ls.validator.systemHealth || 0) + ' health checks\\n';\n    if (ls.pm) systemPrompt += '- PM: ' + (ls.pm.sprintTotal || 0) + ' sprint items, ' + (ls.pm.backlogTotal || 0) + ' backlog\\n';\n    if (ls.scout) systemPrompt += '- Scout: ' + (ls.scout.count || 0) + ' research items\\n';\n    systemPrompt += '\\n';\n  }\n}\n\nsystemPrompt += 'RESPONSE GUIDELINES:\\n'\n  + '- Be concise and action-oriented (under 200 words unless detail is requested)\\n'\n  + '- Reference specific task names and statuses from the live data\\n'\n  + '- Use dashes for lists\\n'\n  + '- If data is insufficient to answer, say so clearly\\n'\n  + '- Suggest next actions when relevant\\n'\n  + '- Use bold (**text**) for emphasis on key numbers or task names';\n\n// --- BUILD MESSAGES ARRAY ---\nvar messages = [];\n\n// Add conversation history (last 10 exchanges max)\nvar historySlice = conversationHistory.slice(-10);\nfor (var k = 0; k < historySlice.length; k++) {\n  var msg = historySlice[k];\n  messages.push({\n    role: msg.role === 'human' ? 'user' : 'assistant',\n    content: msg.content\n  });\n}\n\n// Add current message\nmessages.push({ role: 'user', content: message });\n\n// --- CALL ANTHROPIC API ---\ntry {\n  var response = await this.helpers.httpRequest({\n    method: 'POST',\n    url: 'https://api.anthropic.com/v1/messages',\n    headers: {\n      'Content-Type': 'application/json',\n      'x-api-key': ANTHROPIC_API_KEY,\n      'anthropic-version': '2023-06-01'\n    },\n    body: {\n      model: 'claude-sonnet-4-20250514',\n      max_tokens: 1024,\n      system: systemPrompt,\n      messages: messages\n    }\n  });\n\n  var reply = '';\n  if (response && response.content && response.content.length > 0) {\n    reply = response.content[0].text || 'No response generated.';\n  } else {\n    reply = 'I was unable to generate a response. Please try again.';\n  }\n\n  return [{ json: {\n    reply: reply,\n    timestamp: new Date().toISOString()\n  }}];\n\n} catch (e) {\n  return [{ json: {\n    reply: 'Sorry, I encountered an error connecting to the AI service. Please try again in a moment.',\n    error: e.message,\n    timestamp: new Date().toISOString()\n  }}];\n}"
+      },
+      "id": "chat-processor",
+      "name": "Process Chat Message",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [500, 300]
+    },
+    {
+      "parameters": {
+        "options": {
+          "responseCode": 200,
+          "responseHeaders": {
+            "entries": [
+              { "name": "Content-Type", "value": "application/json" },
+              { "name": "Access-Control-Allow-Origin", "value": "*" },
+              { "name": "Access-Control-Allow-Headers", "value": "Content-Type" },
+              { "name": "Access-Control-Allow-Methods", "value": "POST, OPTIONS" }
+            ]
+          }
+        },
+        "respondWith": "allIncomingItems"
+      },
+      "id": "chat-respond",
+      "name": "Respond to Chat",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [750, 300]
+    }
+  ],
+  "connections": {
+    "Chat Webhook": {
+      "main": [
+        [{ "node": "Process Chat Message", "type": "main", "index": 0 }]
+      ]
+    },
+    "Process Chat Message": {
+      "main": [
+        [{ "node": "Respond to Chat", "type": "main", "index": 0 }]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "tags": [],
+  "triggerCount": 0,
+  "updatedAt": "2026-02-24T00:00:00.000Z",
+  "versionId": "1"
+}

@@ -1,0 +1,71 @@
+{
+  "name": "GRID Dashboard — Agent Detail API",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "GET",
+        "path": "grid-agent-detail",
+        "responseMode": "responseNode",
+        "options": {
+          "allowedOrigins": "*"
+        }
+      },
+      "id": "detail-webhook",
+      "name": "Detail Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [250, 300],
+      "webhookId": "grid-agent-detail"
+    },
+    {
+      "parameters": {
+        "jsCode": "// ============================================================\n// GRID Agent Detail — Fetches full task data from ClickUp\n// Uses this.helpers.httpRequest (verified working in n8n Cloud)\n// ============================================================\n\nvar DASHBOARD_TOKEN = 'grid_fndry_7kX9mP2qR4wL';\nvar CLICKUP_API_KEY = 'YOUR_CLICKUP_API_KEY';\n\n// --- PARSE QUERY ---\nvar query = $input.first().json.query || {};\n\n// --- TOKEN VALIDATION ---\nif (!query.token || query.token !== DASHBOARD_TOKEN) {\n  return [{ json: { error: 'Unauthorized', code: 401 } }];\n}\n\nvar taskId = query.taskId;\nif (!taskId) {\n  return [{ json: { error: 'Missing taskId parameter', code: 400 } }];\n}\n\n// --- FETCH FULL TASK FROM CLICKUP ---\ntry {\n  var url = 'https://api.clickup.com/api/v2/task/' + taskId + '?include_subtasks=true';\n  var task = await this.helpers.httpRequest({\n    method: 'GET',\n    url: url,\n    headers: { 'Authorization': CLICKUP_API_KEY }\n  });\n\n  // --- TRANSFORM SUBTASKS ---\n  var subtasks = [];\n  if (task.subtasks && task.subtasks.length > 0) {\n    for (var i = 0; i < task.subtasks.length; i++) {\n      var st = task.subtasks[i];\n      subtasks.push({\n        id: st.id,\n        name: st.name,\n        status: (st.status && st.status.status) ? st.status.status : 'unknown',\n        statusColor: (st.status && st.status.color) ? st.status.color : '#666',\n        assignees: (st.assignees || []).map(function(a) { return a.username || a.email || ''; })\n      });\n    }\n  }\n\n  // --- TRANSFORM ASSIGNEES ---\n  var assignees = [];\n  if (task.assignees && task.assignees.length > 0) {\n    for (var j = 0; j < task.assignees.length; j++) {\n      var a = task.assignees[j];\n      assignees.push({\n        id: a.id,\n        username: a.username || '',\n        email: a.email || '',\n        initials: a.initials || '',\n        profilePicture: a.profilePicture || null\n      });\n    }\n  }\n\n  // --- TRANSFORM TAGS ---\n  var tags = [];\n  if (task.tags && task.tags.length > 0) {\n    for (var k = 0; k < task.tags.length; k++) {\n      tags.push(task.tags[k].name);\n    }\n  }\n\n  // --- BUILD RESULT ---\n  var result = {\n    id: task.id,\n    name: task.name,\n    description: task.description || task.text_content || '',\n    status: (task.status && task.status.status) ? task.status.status : 'unknown',\n    statusColor: (task.status && task.status.color) ? task.status.color : '#666',\n    priority: (task.priority && task.priority.priority) ? task.priority.priority : null,\n    priorityColor: (task.priority && task.priority.color) ? task.priority.color : null,\n    assignees: assignees,\n    dateCreated: task.date_created,\n    dateUpdated: task.date_updated,\n    dateDone: task.date_done,\n    dueDate: task.due_date,\n    startDate: task.start_date,\n    timeEstimate: task.time_estimate,\n    timeSpent: task.time_spent,\n    url: task.url,\n    subtasks: subtasks,\n    tags: tags,\n    points: task.points,\n    customId: task.custom_id,\n    list: (task.list && task.list.name) ? task.list.name : '',\n    folder: (task.folder && task.folder.name) ? task.folder.name : '',\n    space: (task.space && task.space.id) ? task.space.id : ''\n  };\n\n  return [{ json: result }];\n\n} catch (e) {\n  return [{ json: {\n    error: 'Failed to fetch task details',\n    details: e.message,\n    code: 500\n  }}];\n}"
+      },
+      "id": "detail-processor",
+      "name": "Fetch Agent Detail",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [500, 300]
+    },
+    {
+      "parameters": {
+        "options": {
+          "responseCode": 200,
+          "responseHeaders": {
+            "entries": [
+              { "name": "Content-Type", "value": "application/json" },
+              { "name": "Access-Control-Allow-Origin", "value": "*" },
+              { "name": "Cache-Control", "value": "public, max-age=30" }
+            ]
+          }
+        },
+        "respondWith": "allIncomingItems"
+      },
+      "id": "detail-respond",
+      "name": "Respond with Detail",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [750, 300]
+    }
+  ],
+  "connections": {
+    "Detail Webhook": {
+      "main": [
+        [{ "node": "Fetch Agent Detail", "type": "main", "index": 0 }]
+      ]
+    },
+    "Fetch Agent Detail": {
+      "main": [
+        [{ "node": "Respond with Detail", "type": "main", "index": 0 }]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "tags": [],
+  "triggerCount": 0,
+  "updatedAt": "2026-02-24T00:00:00.000Z",
+  "versionId": "1"
+}

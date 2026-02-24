@@ -123,6 +123,27 @@ body {
   100% { transform: scale(1); }
 }
 
+@keyframes slideInRight {
+  from { transform: translateX(100%); }
+  to   { transform: translateX(0); }
+}
+@keyframes slideOutRight {
+  from { transform: translateX(0); }
+  to   { transform: translateX(100%); }
+}
+@keyframes slideInUp {
+  from { transform: translateY(20px); opacity: 0; }
+  to   { transform: translateY(0); opacity: 1; }
+}
+@keyframes fadeOverlay {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes typingDot {
+  0%, 80%, 100% { opacity: 0.3; transform: scale(0.8); }
+  40% { opacity: 1; transform: scale(1); }
+}
+
 /* ==========================================================================
    HEADER
    ========================================================================== */
@@ -1021,6 +1042,176 @@ body {
   clip: rect(0,0,0,0);
   white-space: nowrap;
 }
+
+/* ==========================================================================
+   CHAT FAB + PANEL
+   ========================================================================== */
+
+.chat-fab {
+  position: fixed; bottom: 24px; right: 24px;
+  width: 56px; height: 56px; border-radius: 50%;
+  background: var(--mint); border: none; cursor: pointer;
+  z-index: 200; display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 4px 20px rgba(126,217,182,0.35), 0 0 40px rgba(126,217,182,0.1);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.chat-fab:hover { transform: scale(1.08); box-shadow: 0 6px 28px rgba(126,217,182,0.45); }
+.chat-fab svg { width: 24px; height: 24px; stroke: var(--base); fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+.chat-panel {
+  position: fixed; bottom: 24px; right: 24px;
+  width: 420px; height: 580px; max-height: calc(100vh - 48px);
+  background: var(--surface); border: 1px solid var(--border); border-radius: 16px;
+  z-index: 210; display: flex; flex-direction: column; overflow: hidden;
+  box-shadow: 0 8px 40px rgba(0,0,0,0.5), 0 0 80px rgba(126,217,182,0.06);
+  animation: slideInUp 0.25s ease-out;
+}
+
+.chat-header {
+  padding: 14px 16px; border-bottom: 1px solid var(--border-subtle);
+  display: flex; align-items: center; gap: 10px; flex-shrink: 0;
+}
+.chat-header-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--mint); animation: pulseLive 2s infinite; flex-shrink: 0; }
+.chat-header-title { font-family: 'Chakra Petch', sans-serif; font-size: 14px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; color: var(--text); flex: 1; }
+.chat-close {
+  width: 28px; height: 28px; border-radius: 6px; border: 1px solid var(--border-subtle);
+  background: transparent; color: var(--text-dim); cursor: pointer;
+  display: flex; align-items: center; justify-content: center; transition: border-color 0.2s, color 0.2s; flex-shrink: 0;
+}
+.chat-close:hover { border-color: var(--urgent); color: var(--urgent); }
+
+.chat-messages { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+.chat-messages::-webkit-scrollbar { width: 4px; }
+.chat-messages::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+.chat-msg { max-width: 88%; padding: 10px 14px; border-radius: 12px; font-size: 13px; line-height: 1.55; word-break: break-word; }
+.chat-msg-human { align-self: flex-end; background: rgba(126,217,182,0.12); border: 1px solid rgba(126,217,182,0.2); color: var(--text); border-bottom-right-radius: 4px; }
+.chat-msg-agent { align-self: flex-start; background: var(--surface-2); border: 1px solid var(--border-subtle); color: var(--text); border-bottom-left-radius: 4px; }
+.chat-msg-time { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--text-muted); margin-top: 4px; }
+.chat-msg-agent .chat-msg-content { white-space: pre-wrap; }
+.chat-msg-agent .chat-msg-content strong { color: var(--mint); font-weight: 600; }
+
+.chat-typing { align-self: flex-start; display: flex; gap: 5px; padding: 12px 16px; background: var(--surface-2); border: 1px solid var(--border-subtle); border-radius: 12px; border-bottom-left-radius: 4px; }
+.chat-typing span { width: 6px; height: 6px; border-radius: 50%; background: var(--text-muted); }
+.chat-typing span:nth-child(1) { animation: typingDot 1.4s infinite 0s; }
+.chat-typing span:nth-child(2) { animation: typingDot 1.4s infinite 0.2s; }
+.chat-typing span:nth-child(3) { animation: typingDot 1.4s infinite 0.4s; }
+
+.chat-input-area { padding: 12px 16px; border-top: 1px solid var(--border-subtle); display: flex; gap: 8px; align-items: flex-end; flex-shrink: 0; }
+.chat-input {
+  flex: 1; min-height: 38px; max-height: 120px; padding: 8px 12px;
+  background: var(--base); border: 1px solid var(--border); border-radius: 10px;
+  color: var(--text); font-family: 'Barlow Semi Condensed', sans-serif; font-size: 13px; line-height: 1.5;
+  resize: none; outline: none; transition: border-color 0.2s;
+}
+.chat-input:focus { border-color: var(--mint); }
+.chat-input::placeholder { color: var(--text-muted); }
+
+.chat-send {
+  width: 38px; height: 38px; border-radius: 10px; border: 1px solid var(--mint);
+  background: rgba(126,217,182,0.1); color: var(--mint); cursor: pointer;
+  display: flex; align-items: center; justify-content: center; transition: background 0.2s, opacity 0.2s; flex-shrink: 0;
+}
+.chat-send:hover { background: rgba(126,217,182,0.2); }
+.chat-send:disabled { opacity: 0.4; cursor: not-allowed; }
+.chat-send svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+.chat-welcome { text-align: center; padding: 24px 16px; }
+.chat-welcome-title { font-family: 'Chakra Petch', sans-serif; font-size: 16px; font-weight: 700; color: var(--text); margin-bottom: 6px; }
+.chat-welcome-desc { font-size: 13px; color: var(--text-dim); line-height: 1.5; margin-bottom: 14px; }
+.chat-suggestions { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; }
+.chat-chip {
+  padding: 6px 12px; background: var(--surface-2); border: 1px solid var(--border-subtle); border-radius: 8px;
+  font-size: 12px; color: var(--text-dim); cursor: pointer; transition: border-color 0.2s, color 0.2s;
+}
+.chat-chip:hover { border-color: var(--mint); color: var(--mint); }
+
+@media (max-width: 500px) {
+  .chat-panel { width: calc(100vw - 16px); right: 8px; bottom: 8px; height: calc(100vh - 16px); max-height: none; border-radius: 12px; }
+}
+
+/* ==========================================================================
+   AGENT DETAIL DRAWER
+   ========================================================================== */
+
+.drawer-backdrop {
+  position: fixed; inset: 0; background: rgba(6,14,21,0.75); z-index: 150;
+  animation: fadeOverlay 0.2s ease-out;
+}
+.agent-drawer {
+  position: fixed; top: 0; right: 0; width: 440px; max-width: 90vw; height: 100vh;
+  background: var(--surface); border-left: 1px solid var(--border); z-index: 160;
+  display: flex; flex-direction: column; overflow: hidden;
+  animation: slideInRight 0.25s ease-out;
+}
+.agent-drawer.closing { animation: slideOutRight 0.2s ease-in forwards; }
+
+.drawer-header {
+  padding: 20px 20px 16px; border-bottom: 1px solid var(--border-subtle); flex-shrink: 0; position: relative;
+}
+.drawer-header::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: var(--drawer-accent, var(--mint)); }
+.drawer-header-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 8px; }
+.drawer-layer-badge { font-family: 'Barlow Semi Condensed', sans-serif; font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-muted); }
+.drawer-title { font-family: 'Chakra Petch', sans-serif; font-size: 17px; font-weight: 700; color: var(--text); line-height: 1.3; flex: 1; }
+.drawer-close {
+  width: 32px; height: 32px; border-radius: 8px; border: 1px solid var(--border);
+  background: transparent; color: var(--text-dim); cursor: pointer;
+  display: flex; align-items: center; justify-content: center; transition: border-color 0.2s, color 0.2s; flex-shrink: 0;
+}
+.drawer-close:hover { border-color: var(--urgent); color: var(--urgent); }
+
+.drawer-body { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 16px; }
+.drawer-body::-webkit-scrollbar { width: 4px; }
+.drawer-body::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+.drawer-field {}
+.drawer-label { font-family: 'Barlow Semi Condensed', sans-serif; font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 4px; }
+.drawer-value { font-size: 14px; color: var(--text); line-height: 1.5; }
+
+.drawer-status {
+  display: inline-block; font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 600;
+  padding: 3px 10px; border-radius: 6px; text-transform: uppercase; letter-spacing: 0.04em;
+}
+.drawer-priority { display: inline-flex; align-items: center; gap: 6px; font-family: 'JetBrains Mono', monospace; font-size: 12px; font-weight: 600; color: var(--text); text-transform: capitalize; }
+.drawer-pri-dot { width: 8px; height: 8px; border-radius: 50%; }
+
+.drawer-assignees { display: flex; flex-wrap: wrap; gap: 6px; }
+.drawer-assignee-chip { font-family: 'JetBrains Mono', monospace; font-size: 11px; padding: 3px 10px; border-radius: 6px; background: var(--surface-2); border: 1px solid var(--border-subtle); color: var(--text-dim); }
+
+.drawer-dates { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+.drawer-desc {
+  font-size: 13px; color: var(--text-dim); line-height: 1.6; white-space: pre-wrap;
+  max-height: 200px; overflow-y: auto; padding: 10px 12px;
+  background: var(--base); border: 1px solid var(--border-subtle); border-radius: 8px;
+}
+
+.drawer-subtasks { display: flex; flex-direction: column; }
+.drawer-subtask { display: flex; align-items: center; gap: 8px; padding: 7px 0; border-bottom: 1px solid var(--border-subtle); }
+.drawer-subtask:last-child { border-bottom: none; }
+.drawer-sub-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+.drawer-sub-name { font-size: 13px; color: var(--text); flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.drawer-sub-status { font-family: 'JetBrains Mono', monospace; font-size: 10px; font-weight: 600; padding: 2px 6px; border-radius: 4px; text-transform: uppercase; flex-shrink: 0; }
+
+.drawer-tags { display: flex; flex-wrap: wrap; gap: 6px; }
+.drawer-tag { font-size: 11px; padding: 3px 10px; border-radius: 6px; background: rgba(126,217,182,0.08); border: 1px solid rgba(126,217,182,0.15); color: var(--mint); }
+
+.drawer-skeleton { height: 14px; background: linear-gradient(90deg, var(--surface-2) 25%, var(--border-subtle) 50%, var(--surface-2) 75%); background-size: 200% 100%; animation: shimmerLoad 1.5s infinite; border-radius: 4px; }
+
+.drawer-footer {
+  padding: 14px 20px; border-top: 1px solid var(--border-subtle); display: flex; gap: 8px; flex-shrink: 0;
+}
+.drawer-btn {
+  padding: 8px 16px; border-radius: 8px; font-family: 'Barlow Semi Condensed', sans-serif;
+  font-size: 13px; font-weight: 600; letter-spacing: 0.04em; cursor: pointer; transition: background 0.2s, border-color 0.2s;
+  text-decoration: none; display: inline-flex; align-items: center; gap: 6px;
+}
+.drawer-btn-primary { background: rgba(126,217,182,0.12); border: 1px solid var(--mint); color: var(--mint); }
+.drawer-btn-primary:hover { background: rgba(126,217,182,0.2); }
+.drawer-btn-secondary { background: transparent; border: 1px solid var(--border); color: var(--text-dim); }
+.drawer-btn-secondary:hover { border-color: var(--text-dim); color: var(--text); }
+
+.hidden { display: none !important; }
 </style>
 </head>
 <body>
@@ -1161,6 +1352,55 @@ body {
   <div class="footer-refresh">Refreshes every 5m</div>
 </div>
 
+<!-- Chat FAB -->
+<button class="chat-fab" id="chatFab" title="Open GRID Agent">
+  <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+</button>
+
+<!-- Chat Panel -->
+<div class="chat-panel hidden" id="chatPanel">
+  <div class="chat-header">
+    <span class="chat-header-dot"></span>
+    <span class="chat-header-title font-display">GRID AGENT</span>
+    <button class="chat-close" id="chatClose" title="Close">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+  </div>
+  <div class="chat-messages" id="chatMessages"></div>
+  <div class="chat-input-area">
+    <textarea class="chat-input" id="chatInput" placeholder="Ask about THE GRID..." rows="1"></textarea>
+    <button class="chat-send" id="chatSend" title="Send">
+      <svg viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+    </button>
+  </div>
+</div>
+
+<!-- Agent Detail Drawer -->
+<div class="drawer-backdrop hidden" id="drawerBackdrop"></div>
+<div class="agent-drawer hidden" id="agentDrawer">
+  <div class="drawer-header" id="drawerHeader">
+    <div class="drawer-header-top">
+      <div>
+        <div class="drawer-layer-badge" id="drawerLayerBadge"></div>
+        <div class="drawer-title" id="drawerTitle">--</div>
+      </div>
+      <button class="drawer-close" id="drawerClose" title="Close">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+  </div>
+  <div class="drawer-body" id="drawerBody"></div>
+  <div class="drawer-footer">
+    <button class="drawer-btn drawer-btn-primary" id="drawerAskBtn">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+      Ask About This
+    </button>
+    <a class="drawer-btn drawer-btn-secondary" id="drawerClickupLink" href="#" target="_blank" rel="noopener">
+      Open in ClickUp
+    </a>
+  </div>
+</div>
+
 <!-- ====================================================================
      JAVASCRIPT — Vanilla, production-grade, no external deps
      ==================================================================== -->
@@ -1174,6 +1414,11 @@ body {
 
   var CONFIG = {
     WEBHOOK_URL: 'https://cprojects1.app.n8n.cloud/webhook/grid-dashboard?token=grid_fndry_7kX9mP2qR4wL',
+    CHAT_WEBHOOK_URL: 'https://cprojects1.app.n8n.cloud/webhook/grid-chat',
+    DETAIL_WEBHOOK_URL: 'https://cprojects1.app.n8n.cloud/webhook/grid-agent-detail',
+    CHAT_TOKEN: 'grid_fndry_7kX9mP2qR4wL',
+    CHAT_STORAGE_KEY: 'grid_chat_history',
+    CHAT_MAX_HISTORY: 50,
     REFRESH_INTERVAL: 300000,
     CLICKUP_WORKSPACE: 'https://app.clickup.com/9014775277'
   };
@@ -1199,6 +1444,10 @@ body {
   var refreshTimer = null;
   var dashboardData = null;
   var hasAnimatedCounters = false;
+  var chatOpen = false;
+  var chatSending = false;
+  var chatHistory = [];
+  var currentDrawerTask = null;
 
   /* ================================================================
      UTILITY FUNCTIONS
@@ -1519,11 +1768,12 @@ body {
         var shown = tasks.slice(0, maxShow);
 
         shown.forEach(function(task) {
-          var row = document.createElement('a');
+          var row = document.createElement('div');
           row.className = 'layer-task';
-          row.href = task.url || '#';
-          row.target = '_blank';
-          row.rel = 'noopener';
+          row.style.cursor = 'pointer';
+          row.addEventListener('click', (function(t, lHex) {
+            return function() { openAgentDrawer(t, lHex); };
+          })(task, layer.hex));
 
           var taskDot = el('span', 'layer-task-dot');
           taskDot.style.background = task.statusColor || getStatusColor(task.status);
@@ -1623,11 +1873,12 @@ body {
     }
 
     pipeline.forEach(function(task) {
-      var row = document.createElement('a');
+      var row = document.createElement('div');
       row.className = 'pipeline-row';
-      row.href = task.url || '#';
-      row.target = '_blank';
-      row.rel = 'noopener';
+      row.style.cursor = 'pointer';
+      row.addEventListener('click', (function(t) {
+        return function() { openAgentDrawer(t, null); };
+      })(task));
 
       /* Priority dot */
       var priDot = el('span', 'pri-dot ' + getPriorityClass(task.priority));
@@ -1644,8 +1895,13 @@ body {
       var dateText = task.dueDate ? formatDate(task.dueDate) : '--';
       row.appendChild(el('span', 'pipeline-date', dateText));
 
-      /* External link icon */
-      var linkWrap = el('span', 'pipeline-link');
+      /* External link — opens ClickUp directly, stops drawer from opening */
+      var linkWrap = document.createElement('a');
+      linkWrap.className = 'pipeline-link';
+      linkWrap.href = task.url || '#';
+      linkWrap.target = '_blank';
+      linkWrap.rel = 'noopener';
+      linkWrap.addEventListener('click', function(e) { e.stopPropagation(); });
       var svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
       svg.setAttribute('class', 'pipeline-link-arrow');
       svg.setAttribute('viewBox', '0 0 24 24');
@@ -1769,6 +2025,510 @@ body {
   }
 
   /* ================================================================
+     CHAT: localStorage persistence
+     ================================================================ */
+
+  function loadChatHistory() {
+    try {
+      var stored = localStorage.getItem(CONFIG.CHAT_STORAGE_KEY);
+      if (stored) {
+        var parsed = JSON.parse(stored);
+        if (Array.isArray(parsed)) return parsed;
+      }
+    } catch (e) { /* ignore */ }
+    return [];
+  }
+
+  function saveChatHistory() {
+    try {
+      var trimmed = chatHistory.slice(-CONFIG.CHAT_MAX_HISTORY);
+      localStorage.setItem(CONFIG.CHAT_STORAGE_KEY, JSON.stringify(trimmed));
+    } catch (e) { /* ignore */ }
+  }
+
+  /* ================================================================
+     CHAT: Dashboard context builder
+     ================================================================ */
+
+  function buildDashboardContext() {
+    if (!dashboardData) return { available: false };
+    var d = dashboardData;
+    var s = d.stats || {};
+    var ctx = {
+      available: true,
+      stats: s,
+      layerSummary: {},
+      buildPipeline: [],
+      recentActivity: []
+    };
+
+    /* Layer summary */
+    if (d.layers) {
+      var la = d.layers;
+      ctx.layerSummary = {
+        architect: { count: la.architect ? (la.architect.agentRegistry || 0) : 0 },
+        builder: {
+          building: (la.builder && la.builder.building) ? la.builder.building.length : 0,
+          shipped: (la.builder && la.builder.shipped) ? la.builder.shipped.length : 0,
+          backlog: (la.builder && la.builder.backlog) ? la.builder.backlog.length : 0
+        },
+        validator: {
+          reviewQueue: la.validator ? (la.validator.reviewQueue || 0) : 0,
+          systemHealth: la.validator ? (la.validator.systemHealth || 0) : 0
+        },
+        pm: {
+          sprintTotal: s.sprintTotal || 0,
+          backlogTotal: (la.pm && la.pm.backlog) ? la.pm.backlog.length : 0
+        },
+        scout: { count: la.scout ? (la.scout.researchQueue || 0) : 0 }
+      };
+    }
+
+    /* Build pipeline tasks */
+    if (d.buildPipeline) {
+      ctx.buildPipeline = d.buildPipeline.map(function(t) {
+        return { name: t.name, status: t.status, priority: t.priority ? t.priority.priority || t.priority : null };
+      });
+    }
+
+    /* Recent activity */
+    if (d.recentActivity) {
+      ctx.recentActivity = d.recentActivity.slice(0, 8).map(function(t) {
+        return { name: t.name, status: t.status };
+      });
+    }
+
+    return ctx;
+  }
+
+  /* ================================================================
+     CHAT: Open / Close / Toggle
+     ================================================================ */
+
+  function openChat() {
+    chatOpen = true;
+    document.getElementById('chatFab').classList.add('hidden');
+    var panel = document.getElementById('chatPanel');
+    panel.classList.remove('hidden');
+    renderChatMessages();
+    var input = document.getElementById('chatInput');
+    setTimeout(function() { input.focus(); }, 100);
+  }
+
+  function closeChat() {
+    chatOpen = false;
+    document.getElementById('chatPanel').classList.add('hidden');
+    document.getElementById('chatFab').classList.remove('hidden');
+  }
+
+  function toggleChat() {
+    if (chatOpen) closeChat();
+    else openChat();
+  }
+
+  /* ================================================================
+     CHAT: Render messages
+     ================================================================ */
+
+  function renderChatMessages() {
+    var container = document.getElementById('chatMessages');
+    clearElement(container);
+
+    if (chatHistory.length === 0) {
+      renderWelcome(container);
+      return;
+    }
+
+    chatHistory.forEach(function(msg) {
+      appendMessageBubble(container, msg.role, msg.content, msg.timestamp);
+    });
+    scrollChatBottom();
+  }
+
+  function renderWelcome(container) {
+    var wrap = el('div', 'chat-welcome');
+    wrap.appendChild(el('div', 'chat-welcome-title font-display', 'GRID Agent'));
+    wrap.appendChild(el('div', 'chat-welcome-desc', 'Ask me anything about your agent pipeline, sprint status, or build progress.'));
+
+    var chips = el('div', 'chat-suggestions');
+    var suggestions = [
+      'What\'s the build pipeline status?',
+      'How many agents are shipped?',
+      'What\'s blocking progress?',
+      'Sprint velocity summary'
+    ];
+    suggestions.forEach(function(text) {
+      var chip = el('div', 'chat-chip', text);
+      chip.addEventListener('click', function() {
+        document.getElementById('chatInput').value = text;
+        sendChatMessage();
+      });
+      chips.appendChild(chip);
+    });
+    wrap.appendChild(chips);
+    container.appendChild(wrap);
+  }
+
+  function appendMessageBubble(container, role, content, timestamp) {
+    var bubble = el('div', 'chat-msg ' + (role === 'human' ? 'chat-msg-human' : 'chat-msg-agent'));
+
+    var contentEl = el('div', 'chat-msg-content');
+    if (role === 'agent') {
+      /* Basic markdown: bold **text** */
+      contentEl.innerHTML = escapeHtml(content)
+        .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+        .replace(/\n/g, '<br>');
+    } else {
+      contentEl.textContent = content;
+    }
+    bubble.appendChild(contentEl);
+
+    if (timestamp) {
+      var time = new Date(timestamp);
+      var timeStr = time.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+      bubble.appendChild(el('div', 'chat-msg-time', timeStr));
+    }
+
+    container.appendChild(bubble);
+  }
+
+  function escapeHtml(str) {
+    var div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+  }
+
+  function scrollChatBottom() {
+    var msgs = document.getElementById('chatMessages');
+    setTimeout(function() { msgs.scrollTop = msgs.scrollHeight; }, 50);
+  }
+
+  /* ================================================================
+     CHAT: Send message
+     ================================================================ */
+
+  function sendChatMessage() {
+    var input = document.getElementById('chatInput');
+    var text = input.value.trim();
+    if (!text || chatSending) return;
+
+    chatSending = true;
+    var sendBtn = document.getElementById('chatSend');
+    sendBtn.disabled = true;
+    input.disabled = true;
+
+    /* Add human message */
+    var now = new Date().toISOString();
+    chatHistory.push({ role: 'human', content: text, timestamp: now });
+    saveChatHistory();
+
+    /* Clear welcome if showing */
+    var welcome = document.querySelector('.chat-welcome');
+    if (welcome) welcome.remove();
+
+    /* Render human bubble */
+    var container = document.getElementById('chatMessages');
+    appendMessageBubble(container, 'human', text, now);
+
+    /* Clear input */
+    input.value = '';
+    input.style.height = '';
+
+    /* Show typing indicator */
+    var typing = el('div', 'chat-typing');
+    typing.appendChild(document.createElement('span'));
+    typing.appendChild(document.createElement('span'));
+    typing.appendChild(document.createElement('span'));
+    container.appendChild(typing);
+    scrollChatBottom();
+
+    /* Build payload */
+    var payload = {
+      token: CONFIG.CHAT_TOKEN,
+      message: text,
+      conversationHistory: chatHistory.slice(-10),
+      dashboardContext: buildDashboardContext()
+    };
+
+    /* POST to n8n */
+    fetch(CONFIG.CHAT_WEBHOOK_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    })
+    .then(function(resp) {
+      if (!resp.ok) throw new Error('HTTP ' + resp.status);
+      return resp.json();
+    })
+    .then(function(data) {
+      if (Array.isArray(data)) data = data[0];
+      var reply = (data && data.reply) ? data.reply : 'Sorry, I could not process that request.';
+
+      chatHistory.push({ role: 'agent', content: reply, timestamp: new Date().toISOString() });
+      saveChatHistory();
+
+      if (typing.parentNode) typing.remove();
+      appendMessageBubble(container, 'agent', reply, new Date().toISOString());
+      scrollChatBottom();
+    })
+    .catch(function(err) {
+      var errMsg = 'Sorry, I encountered an error. The chat workflow may not be active yet. Please check n8n.';
+      chatHistory.push({ role: 'agent', content: errMsg, timestamp: new Date().toISOString() });
+      saveChatHistory();
+
+      if (typing.parentNode) typing.remove();
+      appendMessageBubble(container, 'agent', errMsg, new Date().toISOString());
+      scrollChatBottom();
+    })
+    .finally(function() {
+      chatSending = false;
+      sendBtn.disabled = false;
+      input.disabled = false;
+      input.focus();
+    });
+  }
+
+  /* ================================================================
+     CHAT: Auto-resize textarea
+     ================================================================ */
+
+  function autoResizeInput() {
+    var input = document.getElementById('chatInput');
+    input.style.height = '';
+    input.style.height = Math.min(input.scrollHeight, 120) + 'px';
+  }
+
+  /* ================================================================
+     DRAWER: Open / Close
+     ================================================================ */
+
+  function openAgentDrawer(taskData, layerHex) {
+    currentDrawerTask = taskData;
+    var header = document.getElementById('drawerHeader');
+    header.style.setProperty('--drawer-accent', layerHex || 'var(--mint)');
+
+    /* Set title and layer badge */
+    document.getElementById('drawerTitle').textContent = taskData.name || 'Untitled';
+    var badge = document.getElementById('drawerLayerBadge');
+    if (layerHex) {
+      var found = LAYERS.filter(function(l) { return l.hex === layerHex; });
+      badge.textContent = found.length ? found[0].num + ' ' + found[0].name : '';
+      badge.style.color = layerHex;
+    } else {
+      badge.textContent = '';
+    }
+
+    /* ClickUp link */
+    document.getElementById('drawerClickupLink').href = taskData.url || '#';
+
+    /* Render basic fields from client-side data */
+    renderDrawerBasicFields(taskData);
+
+    /* Show drawer */
+    document.getElementById('drawerBackdrop').classList.remove('hidden');
+    document.getElementById('agentDrawer').classList.remove('hidden');
+
+    /* Fetch enriched data from n8n */
+    fetchAgentDetail(taskData.id);
+  }
+
+  function closeAgentDrawer() {
+    var drawer = document.getElementById('agentDrawer');
+    var backdrop = document.getElementById('drawerBackdrop');
+    drawer.classList.add('closing');
+    setTimeout(function() {
+      drawer.classList.add('hidden');
+      drawer.classList.remove('closing');
+      backdrop.classList.add('hidden');
+      currentDrawerTask = null;
+    }, 200);
+  }
+
+  /* ================================================================
+     DRAWER: Render basic fields (instant, from client data)
+     ================================================================ */
+
+  function renderDrawerBasicFields(task) {
+    var body = document.getElementById('drawerBody');
+    clearElement(body);
+
+    /* Status */
+    var statusField = el('div', 'drawer-field');
+    statusField.appendChild(el('div', 'drawer-label', 'STATUS'));
+    var statusBadge = el('span', 'drawer-status ' + getStatusPillClass(task.status), task.status || 'unknown');
+    var sv = el('div', 'drawer-value');
+    sv.appendChild(statusBadge);
+    statusField.appendChild(sv);
+    body.appendChild(statusField);
+
+    /* Priority */
+    if (task.priority) {
+      var priField = el('div', 'drawer-field');
+      priField.appendChild(el('div', 'drawer-label', 'PRIORITY'));
+      var priVal = el('div', 'drawer-priority');
+      var priDot = el('span', 'drawer-pri-dot');
+      var priName = typeof task.priority === 'object' ? (task.priority.priority || 'normal') : task.priority;
+      var priColors = { urgent: '#F87171', high: '#FBBF24', normal: '#64748B', low: '#475569' };
+      priDot.style.background = priColors[priName] || '#64748B';
+      priVal.appendChild(priDot);
+      priVal.appendChild(document.createTextNode(priName));
+      priField.appendChild(priVal);
+      body.appendChild(priField);
+    }
+
+    /* Assignees */
+    if (task.assignees && task.assignees.length > 0) {
+      var assField = el('div', 'drawer-field');
+      assField.appendChild(el('div', 'drawer-label', 'ASSIGNEES'));
+      var assWrap = el('div', 'drawer-assignees');
+      task.assignees.forEach(function(a) {
+        var name = typeof a === 'string' ? a : (a.username || a.email || 'Unknown');
+        assWrap.appendChild(el('span', 'drawer-assignee-chip', name));
+      });
+      assField.appendChild(assWrap);
+      body.appendChild(assField);
+    }
+
+    /* Dates */
+    var datesField = el('div', 'drawer-field');
+    datesField.appendChild(el('div', 'drawer-label', 'DATES'));
+    var datesGrid = el('div', 'drawer-dates');
+
+    var pairs = [
+      ['Created', task.dateCreated],
+      ['Updated', task.dateUpdated],
+      ['Due', task.dueDate]
+    ];
+    pairs.forEach(function(pair) {
+      if (pair[1]) {
+        var cell = el('div', '');
+        cell.appendChild(el('div', 'drawer-label', pair[0]));
+        cell.appendChild(el('div', 'drawer-value font-mono', formatDate(pair[1])));
+        datesGrid.appendChild(cell);
+      }
+    });
+    datesField.appendChild(datesGrid);
+    body.appendChild(datesField);
+
+    /* Loading placeholder for enriched data */
+    var loadingField = el('div', 'drawer-field');
+    loadingField.id = 'drawerEnriched';
+    var sk1 = el('div', 'drawer-skeleton'); sk1.style.width = '80%'; sk1.style.marginBottom = '8px';
+    var sk2 = el('div', 'drawer-skeleton'); sk2.style.width = '60%'; sk2.style.marginBottom = '8px';
+    var sk3 = el('div', 'drawer-skeleton'); sk3.style.width = '70%';
+    loadingField.appendChild(sk1);
+    loadingField.appendChild(sk2);
+    loadingField.appendChild(sk3);
+    body.appendChild(loadingField);
+  }
+
+  /* ================================================================
+     DRAWER: Fetch enriched data from n8n
+     ================================================================ */
+
+  function fetchAgentDetail(taskId) {
+    if (!taskId) return;
+    var url = CONFIG.DETAIL_WEBHOOK_URL + '?token=' + CONFIG.CHAT_TOKEN + '&taskId=' + taskId;
+
+    fetch(url, { method: 'GET', headers: { 'Accept': 'application/json' } })
+      .then(function(resp) {
+        if (!resp.ok) throw new Error('HTTP ' + resp.status);
+        return resp.json();
+      })
+      .then(function(data) {
+        if (Array.isArray(data)) data = data[0];
+        renderDrawerEnrichedFields(data);
+      })
+      .catch(function(err) {
+        var enriched = document.getElementById('drawerEnriched');
+        if (enriched) {
+          clearElement(enriched);
+          enriched.appendChild(el('div', 'drawer-value', 'Detail unavailable — check n8n workflow.'));
+          enriched.style.color = 'var(--text-muted)';
+          enriched.style.fontSize = '12px';
+        }
+      });
+  }
+
+  /* ================================================================
+     DRAWER: Render enriched data (description, subtasks, tags)
+     ================================================================ */
+
+  function renderDrawerEnrichedFields(data) {
+    var enriched = document.getElementById('drawerEnriched');
+    if (!enriched) return;
+    clearElement(enriched);
+
+    /* Description */
+    if (data.description && data.description.trim()) {
+      var descField = el('div', 'drawer-field');
+      descField.appendChild(el('div', 'drawer-label', 'DESCRIPTION'));
+      var desc = el('div', 'drawer-desc');
+      desc.textContent = data.description.substring(0, 1000);
+      descField.appendChild(desc);
+      enriched.appendChild(descField);
+    }
+
+    /* Tags */
+    if (data.tags && data.tags.length > 0) {
+      var tagField = el('div', 'drawer-field');
+      tagField.appendChild(el('div', 'drawer-label', 'TAGS'));
+      var tagWrap = el('div', 'drawer-tags');
+      data.tags.forEach(function(t) {
+        tagWrap.appendChild(el('span', 'drawer-tag', t));
+      });
+      tagField.appendChild(tagWrap);
+      enriched.appendChild(tagField);
+    }
+
+    /* Subtasks */
+    if (data.subtasks && data.subtasks.length > 0) {
+      var subField = el('div', 'drawer-field');
+      subField.appendChild(el('div', 'drawer-label', 'SUBTASKS (' + data.subtasks.length + ')'));
+      var subList = el('div', 'drawer-subtasks');
+
+      data.subtasks.forEach(function(st) {
+        var row = el('div', 'drawer-subtask');
+        var dot = el('span', 'drawer-sub-dot');
+        dot.style.background = st.statusColor || getStatusColor(st.status);
+        row.appendChild(dot);
+        row.appendChild(el('span', 'drawer-sub-name', st.name || 'Untitled'));
+        var stPill = el('span', 'drawer-sub-status ' + getStatusPillClass(st.status), st.status || '--');
+        row.appendChild(stPill);
+        subList.appendChild(row);
+      });
+
+      subField.appendChild(subList);
+      enriched.appendChild(subField);
+    }
+
+    /* Additional metadata */
+    if (data.list || data.folder) {
+      var locField = el('div', 'drawer-field');
+      locField.appendChild(el('div', 'drawer-label', 'LOCATION'));
+      var locText = [data.folder, data.list].filter(Boolean).join(' → ');
+      locField.appendChild(el('div', 'drawer-value', locText));
+      enriched.appendChild(locField);
+    }
+
+    if (data.timeEstimate) {
+      var teField = el('div', 'drawer-field');
+      teField.appendChild(el('div', 'drawer-label', 'TIME ESTIMATE'));
+      var hours = Math.floor(data.timeEstimate / 3600000);
+      var mins = Math.floor((data.timeEstimate % 3600000) / 60000);
+      teField.appendChild(el('div', 'drawer-value font-mono', hours + 'h ' + mins + 'm'));
+      enriched.appendChild(teField);
+    }
+
+    /* If nothing enriched, show minimal message */
+    if (enriched.children.length === 0) {
+      enriched.appendChild(el('div', 'drawer-value', 'No additional details available.'));
+      enriched.style.color = 'var(--text-muted)';
+      enriched.style.fontSize = '12px';
+    }
+  }
+
+  /* ================================================================
      EVENT BINDINGS
      ================================================================ */
 
@@ -1776,10 +2536,48 @@ body {
     manualRefresh();
   });
 
+  /* Chat */
+  document.getElementById('chatFab').addEventListener('click', toggleChat);
+  document.getElementById('chatClose').addEventListener('click', closeChat);
+  document.getElementById('chatSend').addEventListener('click', sendChatMessage);
+  document.getElementById('chatInput').addEventListener('keydown', function(e) {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      sendChatMessage();
+    }
+  });
+  document.getElementById('chatInput').addEventListener('input', autoResizeInput);
+
+  /* Drawer */
+  document.getElementById('drawerClose').addEventListener('click', closeAgentDrawer);
+  document.getElementById('drawerBackdrop').addEventListener('click', closeAgentDrawer);
+  document.getElementById('drawerAskBtn').addEventListener('click', function() {
+    var title = document.getElementById('drawerTitle').textContent;
+    closeAgentDrawer();
+    setTimeout(function() {
+      openChat();
+      document.getElementById('chatInput').value = 'Tell me about: ' + title;
+      document.getElementById('chatInput').focus();
+    }, 250);
+  });
+
+  /* Global Escape key */
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+      var drawer = document.getElementById('agentDrawer');
+      if (!drawer.classList.contains('hidden')) {
+        closeAgentDrawer();
+      } else if (chatOpen) {
+        closeChat();
+      }
+    }
+  });
+
   /* ================================================================
      INITIALIZATION
      ================================================================ */
 
+  chatHistory = loadChatHistory();
   fetchDashboardData();
   refreshTimer = setInterval(fetchDashboardData, CONFIG.REFRESH_INTERVAL);
 
