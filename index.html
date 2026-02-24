@@ -1,0 +1,997 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FoundryScale Agent Engine — THE GRID Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --surface: #12121a;
+    --surface-2: #1a1a26;
+    --border: #2a2a3a;
+    --border-glow: #3a3a5a;
+    --text: #e8e8f0;
+    --text-dim: #888898;
+    --text-muted: #555568;
+    --architect: #7c6aef;
+    --builder: #f59e0b;
+    --validator: #ef4444;
+    --pm: #3b82f6;
+    --scout: #10b981;
+    --librarian: #8b5cf6;
+    --revenue: #f97316;
+    --urgent: #ef4444;
+    --shipped: #10b981;
+    --building: #f59e0b;
+    --planned: #3b82f6;
+  }
+
+  *, *::before, *::after {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  html {
+    font-size: 14px;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  .mono {
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  ::-webkit-scrollbar { width: 4px; height: 4px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--border-glow); }
+
+  @keyframes pulse-live {
+    0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.5); }
+    50% { opacity: 0.7; box-shadow: 0 0 0 4px rgba(16, 185, 129, 0); }
+  }
+
+  @keyframes shimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+
+  .fade-in { animation: fadeIn 0.4s ease-out forwards; }
+
+  .skeleton {
+    background: linear-gradient(90deg, var(--surface-2) 25%, var(--border) 50%, var(--surface-2) 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+    border-radius: 4px;
+    color: transparent !important;
+  }
+
+  .dashboard {
+    max-width: 1600px;
+    margin: 0 auto;
+    padding: 0 20px 40px;
+  }
+
+  /* HEADER */
+  .header {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: linear-gradient(180deg, var(--bg) 0%, var(--bg) 60%, transparent 100%);
+    padding: 16px 20px 24px;
+  }
+
+  .header-inner {
+    max-width: 1600px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .header-left { display: flex; flex-direction: column; gap: 4px; }
+
+  .header-title {
+    font-size: 1.3rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    color: var(--text);
+  }
+
+  .header-subtitle {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.78rem;
+    color: var(--text-dim);
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  .live-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--shipped);
+    animation: pulse-live 2s infinite;
+    flex-shrink: 0;
+  }
+
+  .live-label { color: var(--shipped); font-weight: 600; font-size: 0.7rem; }
+
+  .header-right { display: flex; align-items: center; gap: 12px; }
+
+  .last-updated {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    color: var(--text-muted);
+  }
+
+  .refresh-btn {
+    width: 32px; height: 32px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text-dim);
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s;
+  }
+
+  .refresh-btn:hover {
+    border-color: var(--border-glow);
+    color: var(--text);
+    background: var(--surface-2);
+  }
+
+  .refresh-btn.spinning svg { animation: spin 0.8s linear infinite; }
+  .refresh-btn svg { width: 16px; height: 16px; }
+
+  /* SECTION TITLES */
+  .section-title {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem; font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 14px;
+    padding-left: 2px;
+  }
+
+  .section-title span { color: var(--text-dim); }
+
+  /* STATS BAR */
+  .stats-bar {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 10px;
+    margin-bottom: 28px;
+  }
+
+  @media (max-width: 1000px) { .stats-bar { grid-template-columns: repeat(4, 1fr); } }
+  @media (max-width: 600px) { .stats-bar { grid-template-columns: repeat(2, 1fr); } }
+
+  .stat-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 16px;
+    display: flex; flex-direction: column; gap: 4px;
+    transition: border-color 0.2s;
+  }
+
+  .stat-card:hover { border-color: var(--border-glow); }
+
+  .stat-label {
+    font-size: 0.7rem; color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.06em; font-weight: 500;
+  }
+
+  .stat-value {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 1.6rem; font-weight: 700; line-height: 1;
+  }
+
+  .stat-value.skeleton { width: 40px; height: 26px; }
+
+  /* GRID LAYERS */
+  .grid-layers {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 12px;
+    margin-bottom: 32px;
+  }
+
+  @media (max-width: 1400px) { .grid-layers { grid-template-columns: repeat(3, 1fr); } }
+  @media (max-width: 1000px) { .grid-layers { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 600px) { .grid-layers { grid-template-columns: 1fr; } }
+
+  .layer-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    display: flex; flex-direction: column;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+
+  .layer-card:hover { border-color: var(--border-glow); }
+
+  .layer-header {
+    padding: 14px 14px 10px;
+    display: flex; align-items: center; gap: 10px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .layer-icon {
+    width: 32px; height: 32px;
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem; font-weight: 700; flex-shrink: 0;
+  }
+
+  .layer-name {
+    font-size: 0.82rem; font-weight: 700; flex: 1;
+    min-width: 0; white-space: nowrap;
+    overflow: hidden; text-overflow: ellipsis;
+  }
+
+  .layer-count {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.65rem; font-weight: 600;
+    padding: 2px 8px; border-radius: 10px;
+    background: var(--surface-2); color: var(--text-dim); flex-shrink: 0;
+  }
+
+  .layer-tasks {
+    padding: 8px;
+    max-height: 260px;
+    overflow-y: auto;
+    display: flex; flex-direction: column; gap: 4px; flex: 1;
+  }
+
+  .layer-empty {
+    padding: 20px 14px; text-align: center;
+    font-size: 0.72rem; color: var(--text-muted); font-style: italic;
+  }
+
+  /* TASK CARDS */
+  .task-card {
+    display: flex; align-items: center; gap: 8px;
+    padding: 8px 10px; border-radius: 8px;
+    border: 1px solid transparent;
+    cursor: pointer; text-decoration: none; color: inherit;
+    transition: all 0.15s;
+  }
+
+  .task-card:hover {
+    background: var(--surface-2);
+    border-color: var(--border);
+    transform: translateY(-1px);
+  }
+
+  .task-name {
+    font-size: 0.78rem; font-weight: 600; flex: 1;
+    min-width: 0; white-space: nowrap;
+    overflow: hidden; text-overflow: ellipsis; line-height: 1.3;
+  }
+
+  .status-pill {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.58rem; font-weight: 600;
+    padding: 2px 7px; border-radius: 6px;
+    text-transform: uppercase; letter-spacing: 0.04em;
+    white-space: nowrap; flex-shrink: 0;
+  }
+
+  .status-shipped { background: rgba(16, 185, 129, 0.15); color: var(--shipped); }
+  .status-building { background: rgba(245, 158, 11, 0.15); color: var(--building); }
+  .status-backlog { background: rgba(59, 130, 246, 0.15); color: var(--planned); }
+  .status-concept { background: rgba(124, 106, 239, 0.15); color: var(--architect); }
+  .status-default { background: rgba(85, 85, 104, 0.2); color: var(--text-dim); }
+
+  /* BUILD PIPELINE */
+  .pipeline-section { margin-bottom: 32px; }
+
+  .pipeline-table {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px; overflow: hidden;
+  }
+
+  .pipeline-header-row {
+    display: grid;
+    grid-template-columns: 1fr 120px 110px 70px 50px;
+    gap: 8px; padding: 10px 16px;
+    border-bottom: 1px solid var(--border);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.62rem; font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase; letter-spacing: 0.08em;
+  }
+
+  .pipeline-list { max-height: 360px; overflow-y: auto; }
+
+  .pipeline-row {
+    display: grid;
+    grid-template-columns: 1fr 120px 110px 70px 50px;
+    gap: 8px; padding: 10px 16px;
+    border-bottom: 1px solid var(--border);
+    align-items: center;
+    transition: background 0.15s;
+    text-decoration: none; color: inherit;
+  }
+
+  .pipeline-row:last-child { border-bottom: none; }
+  .pipeline-row:hover { background: var(--surface-2); }
+  .pipeline-row .task-name { font-size: 0.78rem; }
+
+  .pipeline-row .time-ago {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.68rem; color: var(--text-muted);
+  }
+
+  .priority-dot {
+    width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
+    display: inline-block;
+  }
+
+  .priority-urgent { background: var(--urgent); }
+  .priority-high { background: var(--builder); }
+  .priority-normal { background: var(--planned); }
+  .priority-low { background: var(--text-muted); }
+
+  .pipeline-link {
+    font-size: 0.68rem; color: var(--text-muted);
+    text-decoration: none; transition: color 0.15s;
+  }
+
+  .pipeline-link:hover { color: var(--text); }
+
+  @media (max-width: 700px) {
+    .pipeline-header-row, .pipeline-row {
+      grid-template-columns: 1fr 90px 50px;
+    }
+    .pipeline-header-row > :nth-child(3),
+    .pipeline-header-row > :nth-child(4),
+    .pipeline-row > :nth-child(3),
+    .pipeline-row > :nth-child(4) { display: none; }
+  }
+
+  /* RECENT ACTIVITY */
+  .activity-section { margin-bottom: 32px; }
+
+  .activity-feed {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px; overflow: hidden;
+    max-height: 440px; overflow-y: auto;
+  }
+
+  .activity-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 16px;
+    border-bottom: 1px solid var(--border);
+    text-decoration: none; color: inherit;
+    transition: background 0.15s;
+  }
+
+  .activity-item:last-child { border-bottom: none; }
+  .activity-item:hover { background: var(--surface-2); }
+
+  .activity-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%; flex-shrink: 0;
+  }
+
+  .activity-name {
+    font-size: 0.78rem; font-weight: 500; flex: 1;
+    min-width: 0; white-space: nowrap;
+    overflow: hidden; text-overflow: ellipsis;
+  }
+
+  .activity-time {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.65rem; color: var(--text-muted); flex-shrink: 0;
+  }
+
+  /* FOOTER */
+  .footer {
+    text-align: center; padding: 32px 20px 24px;
+    border-top: 1px solid var(--border); margin-top: 16px;
+  }
+
+  .footer-main {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.68rem; color: var(--text-muted);
+    margin-bottom: 6px; letter-spacing: 0.04em;
+  }
+
+  .footer-sub { font-size: 0.68rem; color: var(--text-muted); }
+
+  .footer-sub a {
+    color: var(--text-dim); text-decoration: none; transition: color 0.2s;
+  }
+
+  .footer-sub a:hover { color: var(--text); }
+
+  /* SETUP PANEL */
+  .setup-panel {
+    max-width: 560px; margin: 60px auto;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px; padding: 40px 36px; text-align: center;
+  }
+
+  .setup-icon { font-size: 2.2rem; margin-bottom: 16px; }
+  .setup-title { font-size: 1.2rem; font-weight: 700; margin-bottom: 10px; }
+
+  .setup-desc {
+    font-size: 0.85rem; color: var(--text-dim);
+    margin-bottom: 24px; line-height: 1.6;
+  }
+
+  .setup-steps {
+    text-align: left; background: var(--surface-2);
+    border-radius: 10px; padding: 20px 24px; margin-bottom: 20px;
+  }
+
+  .setup-steps ol { list-style: none; counter-reset: step; }
+
+  .setup-steps li {
+    counter-increment: step;
+    font-size: 0.8rem; color: var(--text-dim);
+    padding: 6px 0; padding-left: 28px;
+    position: relative; line-height: 1.5;
+  }
+
+  .setup-steps li::before {
+    content: counter(step);
+    position: absolute; left: 0;
+    width: 20px; height: 20px;
+    border-radius: 50%;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.62rem; font-weight: 700;
+    color: var(--text-muted);
+    text-align: center; line-height: 20px;
+  }
+
+  .setup-steps code {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.72rem; background: var(--surface);
+    padding: 1px 6px; border-radius: 4px; color: var(--architect);
+  }
+
+  .setup-endpoint {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.72rem; color: var(--text-muted); margin-top: 8px;
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-inner">
+    <div class="header-left">
+      <div class="header-title">FoundryScale Agent Engine</div>
+      <div class="header-subtitle">
+        <span>THE GRID &mdash; Live Dashboard</span>
+        <span class="live-dot" id="liveDot"></span>
+        <span class="live-label" id="liveLabel">CONNECTING...</span>
+      </div>
+    </div>
+    <div class="header-right">
+      <span class="last-updated mono" id="lastUpdated">--</span>
+      <button class="refresh-btn" id="refreshBtn" title="Refresh data" onclick="manualRefresh()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="23 4 23 10 17 10"></polyline>
+          <polyline points="1 20 1 14 7 14"></polyline>
+          <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+        </svg>
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="dashboard" id="dashboardContent">
+
+  <div class="section-title">System Overview</div>
+  <div class="stats-bar" id="statsBar">
+    <div class="stat-card">
+      <div class="stat-label">Total Agents</div>
+      <div class="stat-value skeleton mono" id="statAgents" style="color:var(--builder)">--</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Shipped</div>
+      <div class="stat-value skeleton mono" id="statShipped" style="color:var(--shipped)">--</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Building</div>
+      <div class="stat-value skeleton mono" id="statBuilding" style="color:var(--building)">--</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Backlog</div>
+      <div class="stat-value skeleton mono" id="statBacklog" style="color:var(--planned)">--</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Sprint Items</div>
+      <div class="stat-value skeleton mono" id="statSprint" style="color:var(--pm)">--</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Content Pipeline</div>
+      <div class="stat-value skeleton mono" id="statContent" style="color:var(--scout)">--</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">GRID Layers</div>
+      <div class="stat-value skeleton mono" id="statLayers" style="color:var(--architect)">--</div>
+    </div>
+  </div>
+
+  <div class="section-title">The GRID &mdash; <span>6 Layer Architecture</span></div>
+  <div class="grid-layers" id="gridLayers"></div>
+
+  <div class="pipeline-section" id="pipelineSection">
+    <div class="section-title">Build Pipeline</div>
+    <div class="pipeline-table">
+      <div class="pipeline-header-row">
+        <div>Task</div>
+        <div>Status</div>
+        <div>Updated</div>
+        <div>Priority</div>
+        <div></div>
+      </div>
+      <div class="pipeline-list" id="pipelineList"></div>
+    </div>
+  </div>
+
+  <div class="activity-section" id="activitySection">
+    <div class="section-title">Recent Activity</div>
+    <div class="activity-feed" id="activityFeed"></div>
+  </div>
+
+</div>
+
+<div id="setupPanel" style="display:none;">
+  <div class="setup-panel">
+    <div class="setup-icon">&#9889;</div>
+    <div class="setup-title">Dashboard Setup Required</div>
+    <div class="setup-desc">
+      This dashboard needs an n8n webhook workflow to pull live data from ClickUp.
+    </div>
+    <div class="setup-steps">
+      <ol>
+        <li>Import the workflow file: <code>workflows/grid-dashboard-data.json</code></li>
+        <li>Open your n8n instance: <code>https://cprojects1.app.n8n.cloud</code></li>
+        <li>Update the ClickUp API key in the Code node</li>
+        <li>Activate the workflow</li>
+        <li>Refresh this page</li>
+      </ol>
+    </div>
+    <div class="setup-endpoint">
+      The webhook endpoint should be: <code>/webhook/grid-dashboard</code>
+    </div>
+  </div>
+</div>
+
+<div class="footer">
+  <div class="footer-main">FoundryScale Agent Engine &bull; THE GRID &bull; Live Dashboard</div>
+  <div class="footer-sub">
+    Data refreshes every 5 minutes &bull; Powered by ClickUp + n8n &bull;
+    <a href="https://app.clickup.com/9014775277" target="_blank" rel="noopener">Open Workspace</a>
+  </div>
+</div>
+
+<script>
+(function() {
+  'use strict';
+
+  var CONFIG = {
+    WEBHOOK_URL: 'https://cprojects1.app.n8n.cloud/webhook/grid-dashboard',
+    REFRESH_INTERVAL: 300000,
+    CLICKUP_WORKSPACE: 'https://app.clickup.com/9014775277'
+  };
+
+  var LAYERS = [
+    { key: 'architect',  num: '01', name: 'Architect',  color: 'var(--architect)',  bg: 'rgba(124,106,239,0.13)' },
+    { key: 'builder',    num: '02', name: 'Builder',    color: 'var(--builder)',    bg: 'rgba(245,158,11,0.13)' },
+    { key: 'validator',  num: '03', name: 'Validator',  color: 'var(--validator)',  bg: 'rgba(239,68,68,0.13)' },
+    { key: 'pm',         num: '04', name: 'PM',         color: 'var(--pm)',         bg: 'rgba(59,130,246,0.13)' },
+    { key: 'scout',      num: '05', name: 'Scout',      color: 'var(--scout)',      bg: 'rgba(16,185,129,0.13)' },
+    { key: 'librarian',  num: '06', name: 'Librarian',  color: 'var(--librarian)',  bg: 'rgba(139,92,246,0.13)' }
+  ];
+
+  var refreshTimer = null;
+  var dashboardData = null;
+
+  /* ===== HELPERS ===== */
+
+  function escapeHtml(str) {
+    if (!str) return '';
+    var div = document.createElement('div');
+    div.appendChild(document.createTextNode(str));
+    return div.textContent;
+  }
+
+  function timeAgo(timestamp) {
+    if (!timestamp) return '--';
+    var ts = typeof timestamp === 'string' ? parseInt(timestamp, 10) : timestamp;
+    if (isNaN(ts)) return '--';
+    if (ts < 1e12) ts = ts * 1000;
+    var now = Date.now();
+    var diff = now - ts;
+    if (diff < 0) return 'just now';
+    var secs = Math.floor(diff / 1000);
+    if (secs < 60) return 'just now';
+    var mins = Math.floor(secs / 60);
+    if (mins < 60) return mins + 'm ago';
+    var hrs = Math.floor(mins / 60);
+    if (hrs < 24) return hrs + 'h ago';
+    var days = Math.floor(hrs / 24);
+    if (days < 30) return days + 'd ago';
+    var months = Math.floor(days / 30);
+    return months + 'mo ago';
+  }
+
+  function mapStatusClass(status) {
+    if (!status) return 'status-default';
+    var s = status.toLowerCase().trim();
+    if (['shipped','complete','done','closed'].some(function(k){return s.indexOf(k)!==-1;})) return 'status-shipped';
+    if (['in progress','building','in review'].some(function(k){return s.indexOf(k)!==-1;})) return 'status-building';
+    if (['backlog','open','to do','todo','planned'].some(function(k){return s.indexOf(k)!==-1;})) return 'status-backlog';
+    if (['concept','idea','draft'].some(function(k){return s.indexOf(k)!==-1;})) return 'status-concept';
+    return 'status-default';
+  }
+
+  function mapStatusColor(status) {
+    var cls = mapStatusClass(status);
+    if (cls === 'status-shipped') return 'var(--shipped)';
+    if (cls === 'status-building') return 'var(--building)';
+    if (cls === 'status-backlog') return 'var(--planned)';
+    if (cls === 'status-concept') return 'var(--architect)';
+    return 'var(--text-muted)';
+  }
+
+  function priorityClass(priority) {
+    if (!priority) return 'priority-normal';
+    var p = (typeof priority === 'object') ? (priority.priority || '') : String(priority);
+    var pl = p.toLowerCase();
+    if (pl === 'urgent' || pl === '1') return 'priority-urgent';
+    if (pl === 'high' || pl === '2') return 'priority-high';
+    if (pl === 'normal' || pl === '3') return 'priority-normal';
+    return 'priority-low';
+  }
+
+  /* ===== DOM BUILDERS (safe, no innerHTML) ===== */
+
+  function clearElement(el) {
+    while (el.firstChild) el.removeChild(el.firstChild);
+  }
+
+  function createText(tag, text, className) {
+    var el = document.createElement(tag);
+    if (className) el.className = className;
+    el.textContent = text || '';
+    return el;
+  }
+
+  function createTaskCard(task) {
+    var a = document.createElement('a');
+    a.className = 'task-card';
+    a.href = task.url || '#';
+    a.target = '_blank';
+    a.rel = 'noopener';
+
+    var nameSpan = document.createElement('span');
+    nameSpan.className = 'task-name';
+    nameSpan.textContent = task.name || 'Untitled';
+    a.appendChild(nameSpan);
+
+    var status = task.status || '';
+    if (status) {
+      var pill = document.createElement('span');
+      pill.className = 'status-pill ' + mapStatusClass(status);
+      pill.textContent = status;
+      a.appendChild(pill);
+    }
+
+    return a;
+  }
+
+  /* ===== FETCH ===== */
+
+  function fetchDashboardData() {
+    var btn = document.getElementById('refreshBtn');
+    btn.classList.add('spinning');
+
+    fetch(CONFIG.WEBHOOK_URL, {
+      method: 'GET',
+      headers: { 'Accept': 'application/json' }
+    })
+    .then(function(resp) {
+      if (!resp.ok) throw new Error('HTTP ' + resp.status);
+      return resp.json();
+    })
+    .then(function(data) {
+      if (Array.isArray(data)) data = data[0];
+      dashboardData = data;
+      renderDashboard(data);
+      showDashboard();
+      updateLiveStatus(true);
+      updateLastUpdated();
+    })
+    .catch(function(err) {
+      console.error('Fetch failed:', err);
+      if (!dashboardData) showSetup();
+      updateLiveStatus(false);
+    })
+    .finally(function() {
+      btn.classList.remove('spinning');
+    });
+  }
+
+  function manualRefresh() {
+    fetchDashboardData();
+    if (refreshTimer) clearInterval(refreshTimer);
+    refreshTimer = setInterval(fetchDashboardData, CONFIG.REFRESH_INTERVAL);
+  }
+
+  window.manualRefresh = manualRefresh;
+
+  /* ===== SHOW/HIDE ===== */
+
+  function showDashboard() {
+    document.getElementById('dashboardContent').style.display = '';
+    document.getElementById('setupPanel').style.display = 'none';
+  }
+
+  function showSetup() {
+    document.getElementById('dashboardContent').style.display = 'none';
+    document.getElementById('setupPanel').style.display = '';
+  }
+
+  function updateLiveStatus(connected) {
+    var dot = document.getElementById('liveDot');
+    var label = document.getElementById('liveLabel');
+    if (connected) {
+      dot.style.background = 'var(--shipped)';
+      dot.style.animation = 'pulse-live 2s infinite';
+      label.textContent = 'LIVE';
+      label.style.color = 'var(--shipped)';
+    } else {
+      dot.style.background = 'var(--urgent)';
+      dot.style.animation = 'none';
+      label.textContent = 'OFFLINE';
+      label.style.color = 'var(--urgent)';
+    }
+  }
+
+  function updateLastUpdated() {
+    var el = document.getElementById('lastUpdated');
+    var now = new Date();
+    el.textContent = 'Updated ' + now.toLocaleTimeString('en-US', {
+      hour: '2-digit', minute: '2-digit', hour12: true
+    });
+  }
+
+  /* ===== RENDER ===== */
+
+  function renderDashboard(data) {
+    renderStats(data.stats || {});
+    renderGridLayers(data.layers || {});
+    renderPipeline(data.buildPipeline || []);
+    renderActivity(data.recentActivity || []);
+  }
+
+  function renderStats(stats) {
+    var fields = [
+      { id: 'statAgents', key: 'totalAgents', fallback: null },
+      { id: 'statShipped', key: 'shipped', fallback: null },
+      { id: 'statBuilding', key: 'building', fallback: null },
+      { id: 'statBacklog', key: 'backlog', fallback: null },
+      { id: 'statSprint', key: 'sprintTotal', fallback: null },
+      { id: 'statContent', key: 'contentPipeline', fallback: null },
+      { id: 'statLayers', key: null, fallback: 6 }
+    ];
+
+    fields.forEach(function(f) {
+      var el = document.getElementById(f.id);
+      var val = f.fallback !== null ? f.fallback : (stats[f.key] != null ? stats[f.key] : '--');
+      el.textContent = val;
+      el.classList.remove('skeleton');
+    });
+  }
+
+  function renderGridLayers(layers) {
+    var container = document.getElementById('gridLayers');
+    clearElement(container);
+
+    LAYERS.forEach(function(layer) {
+      var layerData = layers[layer.key] || {};
+      var tasks = [];
+
+      if (layer.key === 'builder') {
+        tasks = [].concat(
+          layerData.building || [],
+          layerData.shipped || [],
+          layerData.backlog || []
+        );
+      } else if (layer.key === 'pm') {
+        tasks = layerData.sprintBoard || layerData.items || [];
+      } else {
+        tasks = layerData.items || [];
+      }
+
+      var card = document.createElement('div');
+      card.className = 'layer-card fade-in';
+
+      // Header
+      var header = document.createElement('div');
+      header.className = 'layer-header';
+
+      var icon = document.createElement('div');
+      icon.className = 'layer-icon';
+      icon.style.background = layer.bg;
+      icon.style.color = layer.color;
+      icon.textContent = layer.num;
+      header.appendChild(icon);
+
+      var name = document.createElement('div');
+      name.className = 'layer-name';
+      name.style.color = layer.color;
+      name.textContent = layerData.name || layer.name;
+      header.appendChild(name);
+
+      var count = document.createElement('div');
+      count.className = 'layer-count';
+      count.textContent = tasks.length;
+      header.appendChild(count);
+
+      card.appendChild(header);
+
+      // Tasks
+      if (tasks.length === 0) {
+        var empty = document.createElement('div');
+        empty.className = 'layer-empty';
+        empty.textContent = 'No active items';
+        card.appendChild(empty);
+      } else {
+        var taskContainer = document.createElement('div');
+        taskContainer.className = 'layer-tasks';
+        tasks.forEach(function(task) {
+          taskContainer.appendChild(createTaskCard(task));
+        });
+        card.appendChild(taskContainer);
+      }
+
+      container.appendChild(card);
+    });
+  }
+
+  function renderPipeline(pipeline) {
+    var container = document.getElementById('pipelineList');
+    clearElement(container);
+
+    if (!pipeline || pipeline.length === 0) {
+      var empty = document.createElement('div');
+      empty.style.cssText = 'padding:24px;text-align:center;color:var(--text-muted);font-size:0.78rem;';
+      empty.textContent = 'No pipeline items available';
+      container.appendChild(empty);
+      return;
+    }
+
+    pipeline.forEach(function(task) {
+      var row = document.createElement('a');
+      row.className = 'pipeline-row';
+      row.href = task.url || '#';
+      row.target = '_blank';
+      row.rel = 'noopener';
+
+      var nameSpan = document.createElement('span');
+      nameSpan.className = 'task-name';
+      nameSpan.textContent = task.name || 'Untitled';
+      row.appendChild(nameSpan);
+
+      var pill = document.createElement('span');
+      pill.className = 'status-pill ' + mapStatusClass(task.status);
+      pill.textContent = task.status || '';
+      row.appendChild(pill);
+
+      var time = document.createElement('span');
+      time.className = 'time-ago';
+      time.textContent = timeAgo(task.dateUpdated);
+      row.appendChild(time);
+
+      var priWrapper = document.createElement('span');
+      var priDot = document.createElement('span');
+      priDot.className = 'priority-dot ' + priorityClass(task.priority);
+      priWrapper.appendChild(priDot);
+      row.appendChild(priWrapper);
+
+      var link = document.createElement('span');
+      link.className = 'pipeline-link';
+      link.textContent = '\u2197';
+      row.appendChild(link);
+
+      container.appendChild(row);
+    });
+  }
+
+  function renderActivity(activity) {
+    var container = document.getElementById('activityFeed');
+    clearElement(container);
+
+    if (!activity || activity.length === 0) {
+      var empty = document.createElement('div');
+      empty.style.cssText = 'padding:24px;text-align:center;color:var(--text-muted);font-size:0.78rem;';
+      empty.textContent = 'No recent activity';
+      container.appendChild(empty);
+      return;
+    }
+
+    var items = activity.slice(0, 15);
+
+    items.forEach(function(item) {
+      var a = document.createElement('a');
+      a.className = 'activity-item';
+      a.href = item.url || '#';
+      a.target = '_blank';
+      a.rel = 'noopener';
+
+      var dot = document.createElement('span');
+      dot.className = 'activity-dot';
+      dot.style.background = item.statusColor || mapStatusColor(item.status);
+      a.appendChild(dot);
+
+      var nameEl = document.createElement('span');
+      nameEl.className = 'activity-name';
+      nameEl.textContent = item.name || 'Untitled';
+      a.appendChild(nameEl);
+
+      var timeEl = document.createElement('span');
+      timeEl.className = 'activity-time';
+      timeEl.textContent = timeAgo(item.dateUpdated);
+      a.appendChild(timeEl);
+
+      container.appendChild(a);
+    });
+  }
+
+  /* ===== INIT ===== */
+  fetchDashboardData();
+  refreshTimer = setInterval(fetchDashboardData, CONFIG.REFRESH_INTERVAL);
+
+})();
+</script>
+
+</body>
+</html>
