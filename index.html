@@ -302,6 +302,10 @@ kbd{font-size:9px;padding:1px 4px;border:1px solid var(--bdr2);border-radius:2px
     <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
     GRID Chat <kbd>⌘J</kbd>
   </button>
+  <button class="tbtn" id="refreshbtn" onclick="refreshFeed()">
+    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 4v6h-6"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+    Refresh
+  </button>
   <div class="tright">
     <div class="pill ok"><div class="dot g"></div> N8N Cloud</div>
     <div class="pill ok"><div class="dot g"></div> Supabase</div>
@@ -575,20 +579,6 @@ const SPRINT_TASKS = [
   {col:'done', title:'G1 full email flow verified', tags:['N8N','Claude'], id:'86b8u7q00'},
 ];
 
-const EXEC_EVENTS = [
-  {agent:'F4',color:'#E8A020',desc:'/email → G1-Chat routed',dur:'280ms',ok:true},
-  {agent:'G1',color:'#3B82F6',desc:'Email generated for Datadog prospect',dur:'31s',ok:true},
-  {agent:'X1',color:'#F59E0B',desc:'G1 exec logged to Supabase',dur:'150ms',ok:true},
-  {agent:'QR',color:'#8B5CF6',desc:'@Qura answered question in #qura',dur:'58s',ok:true},
-  {agent:'F4',color:'#E8A020',desc:'/research → R2 dispatched',dur:'310ms',ok:true},
-  {agent:'R2',color:'#10B981',desc:'YouTube transcript: Anthropic pricing',dur:'44s',ok:true},
-  {agent:'X1',color:'#F59E0B',desc:'R2 exec logged · 47s duration',dur:'142ms',ok:true},
-  {agent:'FA',color:'#EF4444',desc:'Feedback thread processed in #prospectemail',dur:'51s',ok:true},
-  {agent:'F4',color:'#E8A020',desc:'/agent-info → A1 response',dur:'292ms',ok:true},
-  {agent:'A1',color:'#3B82F6',desc:'Agent metadata returned for R2',dur:'260ms',ok:true},
-  {agent:'QR',color:'#8B5CF6',desc:'Daily Oracle posted to #qura',dur:'67s',ok:true},
-  {agent:'R2',color:'#10B981',desc:'Research queued: Anthropic 2026 pricing',dur:'41s',ok:false},
-];
 
 const INFRA = [
   {name:'N8N Cloud',status:'OPERATIONAL',cls:'ok'},
@@ -761,7 +751,7 @@ function showToast(agent, message, color) {
 }
 
 // ═══════════════════════════════════════════════════
-// EXEC FEED — real Supabase data, simulated fallback
+// EXEC FEED — live Supabase polling
 // ═══════════════════════════════════════════════════
 const SUPA_URL = 'https://fppuoqteleayiepoykyc.supabase.co/rest/v1/executions';
 const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZwcHVvcXRlbGVheWllcG95a3ljIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE4NjI0ODksImV4cCI6MjA4NzQzODQ4OX0.BlTjMTosZIN5poVrjCAuHCaZPt-_S47YfMvxAGlPfs8';
@@ -859,28 +849,28 @@ async function pollSupabase() {
   }
 }
 
-// Simulated fallback (used only if Supabase returns nothing on first load)
-let feedIdx2 = 0;
-function addSimFeedItem() {
-  const e = EXEC_EVENTS[feedIdx2 % EXEC_EVENTS.length]; feedIdx2++;
-  renderFeedRow({...e, time: feedIdx2 <= 14 ? `${feedIdx2 * 3}m` : 'now'}, feedIdx2 > 14);
-}
-
-// Bootstrap: load from Supabase, fall back to simulated if empty
+// Bootstrap: poll Supabase on load, then every 30s
 (async function initFeed() {
-  const gotReal = await pollSupabase();
-  if (!gotReal) {
-    // No real data yet — seed with simulated rows
-    for (let i = 0; i < 14; i++) addSimFeedItem();
-  }
-  // Poll Supabase every 30s for new rows; add simulated item in between
-  setInterval(async () => {
-    const got = await pollSupabase();
-    if (!got) addSimFeedItem(); // heartbeat when quiet
-  }, 30000);
-  // Simulated heartbeat every 8s (keeps feed feeling alive between real events)
-  setInterval(addSimFeedItem, 8000);
+  await pollSupabase();
+  setInterval(pollSupabase, 30000);
 })();
+
+async function refreshFeed() {
+  const btn = document.getElementById('refreshbtn');
+  if (btn) { btn.disabled = true; btn.style.opacity = '0.5'; }
+  // Clear feed and reset pointer so all recent rows reload
+  lastSeenExecId = null;
+  const fbody = document.getElementById('fbody');
+  while (fbody.firstChild) fbody.removeChild(fbody.firstChild);
+  await pollSupabase();
+  // Also reset logs so next visit re-fetches
+  logsDone = false;
+  const logbody = document.getElementById('logbody');
+  if (logbody) while (logbody.firstChild) logbody.removeChild(logbody.firstChild);
+  const logTab = document.getElementById('tab-logs');
+  if (logTab && logTab.classList.contains('active')) renderLogs();
+  if (btn) { btn.disabled = false; btn.style.opacity = ''; }
+}
 
 // ═══════════════════════════════════════════════════
 // ACTIVITY HEATMAP
@@ -1024,26 +1014,48 @@ function renderSprint() {
 // EXEC LOGS
 // ═══════════════════════════════════════════════════
 let logsDone = false;
-function renderLogs() {
+async function renderLogs() {
   if (logsDone) return; logsDone = true;
   const el = document.getElementById('logbody');
-  for (let i = 0; i < 80; i++) {
-    const e = EXEC_EVENTS[i % EXEC_EVENTS.length];
-    const mins = i * 3 + Math.floor(Math.random() * 2);
-    const d = new Date(Date.now() - mins * 60000);
-    const ts = `${String(d.getUTCHours()).padStart(2,'0')}:${String(d.getUTCMinutes()).padStart(2,'0')}:${String(d.getUTCSeconds()).padStart(2,'0')}`;
-    const ok = Math.random() > 0.05;
-    const row = mk('div', {cls:'lr'});
-    row.appendChild(mk('div', {text:`2026-03-02 ${ts}`, style:'color:var(--muted);font-size:9px'}));
-    const c2 = mk('div');
-    c2.appendChild(mk('span', {cls:'fatag', text: e.agent, style:`background:${e.color}22;color:${e.color}`}));
-    row.appendChild(c2);
-    const c3 = mk('div');
-    c3.appendChild(mk('span', {cls:'ls ' + (ok ? 'ok' : 'err'), text: ok ? 'OK' : 'ERROR'}));
-    row.appendChild(c3);
-    row.appendChild(mk('div', {text: e.desc, style:'color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis'}));
-    row.appendChild(mk('div', {text: e.dur, style:'color:var(--dim)'}));
-    row.appendChild(mk('div', {text:(e.agent === 'X1' || e.agent === 'A1') ? 'sub-wf' : 'webhook', style:'color:var(--dim);font-size:9px'}));
+  try {
+    const params = new URLSearchParams({
+      select: 'id,agent_id,success,created_at,tokens_used,input',
+      order: 'created_at.desc', limit: '80',
+    });
+    const res = await fetch(`${SUPA_URL}?${params}`, {
+      headers: { 'apikey': SUPA_KEY, 'Authorization': `Bearer ${SUPA_KEY}`, 'Accept': 'application/json' }
+    });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const rows = await res.json();
+    if (!rows || !rows.length) {
+      const row = mk('div', {cls:'lr', style:'grid-column:1/-1;color:var(--muted);padding:20px'});
+      row.appendChild(mk('span', {text:'No execution data in Supabase yet.'}));
+      el.appendChild(row); return;
+    }
+    rows.forEach(row => {
+      const info = agentInfoFromRow(row);
+      const d = new Date(row.created_at);
+      const pad = n => String(n).padStart(2,'0');
+      const dateStr = `${d.getUTCFullYear()}-${pad(d.getUTCMonth()+1)}-${pad(d.getUTCDate())} ${pad(d.getUTCHours())}:${pad(d.getUTCMinutes())}:${pad(d.getUTCSeconds())}`;
+      const inputSummary = typeof row.input === 'object' && row.input !== null
+        ? (row.input.source || row.input.trigger || row.input.message || JSON.stringify(row.input)).toString().slice(0, 60)
+        : String(row.input || '').slice(0, 60);
+      const lr = mk('div', {cls:'lr'});
+      lr.appendChild(mk('div', {text: dateStr, style:'color:var(--muted);font-size:9px'}));
+      const c2 = mk('div');
+      c2.appendChild(mk('span', {cls:'fatag', text: info.id, style:`background:${info.color}22;color:${info.color}`}));
+      lr.appendChild(c2);
+      const c3 = mk('div');
+      c3.appendChild(mk('span', {cls:'ls ' + (row.success !== false ? 'ok' : 'err'), text: row.success !== false ? 'OK' : 'ERROR'}));
+      lr.appendChild(c3);
+      lr.appendChild(mk('div', {text: inputSummary || `exec #${String(row.id).slice(-6)}`, style:'color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis'}));
+      lr.appendChild(mk('div', {text: row.tokens_used ? `${row.tokens_used}t` : '—', style:'color:var(--dim)'}));
+      lr.appendChild(mk('div', {text:'sub-wf', style:'color:var(--dim);font-size:9px'}));
+      el.appendChild(lr);
+    });
+  } catch {
+    const row = mk('div', {cls:'lr', style:'grid-column:1/-1;color:var(--red);padding:12px'});
+    row.appendChild(mk('span', {text:'Failed to load logs from Supabase.'}));
     el.appendChild(row);
   }
 }
