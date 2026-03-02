@@ -761,30 +761,126 @@ function showToast(agent, message, color) {
 }
 
 // ═══════════════════════════════════════════════════
-// EXEC FEED
+// EXEC FEED — real Supabase data, simulated fallback
 // ═══════════════════════════════════════════════════
-let feedIdx = 0, toastCounter = 0;
-function addFeedItem() {
-  const e = EXEC_EVENTS[feedIdx % EXEC_EVENTS.length]; feedIdx++;
+const SUPA_URL = 'https://fppuoqteleayiepoykyc.supabase.co/rest/v1/executions';
+const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZwcHVvcXRlbGVheWllcG95a3ljIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE4NjI0ODksImV4cCI6MjA4NzQzODQ4OX0.BlTjMTosZIN5poVrjCAuHCaZPt-_S47YfMvxAGlPfs8';
+
+// Agent ID → display info lookup (maps Supabase agent UUIDs to AGENTS array)
+const AGENT_UUID_MAP = {
+  'c4a1f2e8-9b3d-4f56-a789-2e1d0c8b5a3f': {id:'FA', color:'#EF4444'},
+};
+// Build map from AGENTS array too (agent_id field in executions may be name or uuid)
+const AGENT_BY_ID = {};
+AGENTS.forEach(a => { AGENT_BY_ID[a.id] = a; AGENT_BY_ID[a.id.toLowerCase()] = a; });
+
+let lastSeenExecId = null, toastCounter = 0, feedIdx = 0;
+
+function agentInfoFromRow(row) {
+  // Try uuid map first, then agent_id string match
+  if (row.agent_id && AGENT_UUID_MAP[row.agent_id]) return AGENT_UUID_MAP[row.agent_id];
+  const name = (row.agent_id || '').toUpperCase().split('-')[0];
+  const match = AGENTS.find(a => a.id === name || a.name.includes(name));
+  return match ? {id: match.id, color: match.color} : {id: row.agent_id ? row.agent_id.slice(0,4).toUpperCase() : '??', color:'#4A6A8A'};
+}
+
+function relativeTime(isoStr) {
+  if (!isoStr) return 'now';
+  const diff = Math.floor((Date.now() - new Date(isoStr)) / 1000);
+  if (diff < 60) return diff < 5 ? 'now' : `${diff}s`;
+  if (diff < 3600) return `${Math.floor(diff/60)}m`;
+  return `${Math.floor(diff/3600)}h`;
+}
+
+function renderFeedRow(e, isNew) {
   const fbody = document.getElementById('fbody');
-  const mins = Math.floor(Math.random() * 5);
   const row = mk('div', {cls:'fi'});
   const tag = mk('span', {cls:'fatag', text: e.agent, style:`background:${e.color}22;color:${e.color}`});
   const dot = mk('div', {cls:'dot g'});
   const desc = mk('span', {cls:'fd', text: e.desc});
-  const dur = mk('span', {cls:'ft', text: e.dur, style:'margin-right:4px'});
+  const dur = mk('span', {cls:'ft', text: e.dur || '', style:'margin-right:4px'});
   const st = mk('span', {cls:'fst ' + (e.ok ? 'ok' : 'err'), text: e.ok ? 'OK' : 'ERR'});
-  const time = mk('span', {cls:'ft', text: mins === 0 ? 'now' : `${mins}m`});
+  const time = mk('span', {cls:'ft', text: e.time || 'now'});
   row.append(tag, dot, desc, dur, st, time);
   fbody.insertBefore(row, fbody.firstChild);
   while (fbody.children.length > 22) fbody.removeChild(fbody.lastChild);
 
-  // Toast every ~4 items
-  toastCounter++;
-  if (toastCounter % 4 === 0) showToast(e.agent, e.desc, e.color);
+  if (isNew) {
+    toastCounter++;
+    if (toastCounter % 4 === 0) showToast(e.agent, e.desc, e.color);
+  }
 }
-for (let i = 0; i < 14; i++) addFeedItem();
-setInterval(addFeedItem, 3200);
+
+async function pollSupabase() {
+  try {
+    const params = new URLSearchParams({
+      select: 'id,agent_id,success,created_at,tokens_used,input,output',
+      order: 'created_at.desc',
+      limit: '20',
+    });
+    const res = await fetch(`${SUPA_URL}?${params}`, {
+      headers: {
+        'apikey': SUPA_KEY,
+        'Authorization': `Bearer ${SUPA_KEY}`,
+        'Accept': 'application/json',
+      }
+    });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const rows = await res.json();
+    if (!rows || !rows.length) return false;
+
+    // Update infra status pill
+    const supaPill = [...document.querySelectorAll('.pill')].find(p => p.textContent.includes('Supabase'));
+    if (supaPill) { supaPill.className = 'pill ok'; supaPill.firstChild.className = 'dot g'; }
+
+    // Find truly new rows since last poll
+    const newRows = lastSeenExecId ? rows.filter(r => r.id > lastSeenExecId) : rows;
+    lastSeenExecId = rows[0].id;
+
+    // Render new rows (most recent first, already sorted desc)
+    newRows.forEach(row => {
+      const info = agentInfoFromRow(row);
+      const inputSummary = typeof row.input === 'object' && row.input !== null
+        ? (row.input.source || row.input.trigger || row.input.message || JSON.stringify(row.input)).toString().slice(0, 60)
+        : String(row.input || '').slice(0, 60);
+      const e = {
+        agent: info.id,
+        color: info.color,
+        desc: inputSummary || `execution #${String(row.id).slice(-6)}`,
+        dur: row.tokens_used ? `${row.tokens_used}t` : '',
+        ok: row.success !== false,
+        time: relativeTime(row.created_at),
+      };
+      renderFeedRow(e, !!lastSeenExecId);
+    });
+    return newRows.length > 0;
+  } catch {
+    return false;
+  }
+}
+
+// Simulated fallback (used only if Supabase returns nothing on first load)
+let feedIdx2 = 0;
+function addSimFeedItem() {
+  const e = EXEC_EVENTS[feedIdx2 % EXEC_EVENTS.length]; feedIdx2++;
+  renderFeedRow({...e, time: feedIdx2 <= 14 ? `${feedIdx2 * 3}m` : 'now'}, feedIdx2 > 14);
+}
+
+// Bootstrap: load from Supabase, fall back to simulated if empty
+(async function initFeed() {
+  const gotReal = await pollSupabase();
+  if (!gotReal) {
+    // No real data yet — seed with simulated rows
+    for (let i = 0; i < 14; i++) addSimFeedItem();
+  }
+  // Poll Supabase every 30s for new rows; add simulated item in between
+  setInterval(async () => {
+    const got = await pollSupabase();
+    if (!got) addSimFeedItem(); // heartbeat when quiet
+  }, 30000);
+  // Simulated heartbeat every 8s (keeps feed feeling alive between real events)
+  setInterval(addSimFeedItem, 8000);
+})();
 
 // ═══════════════════════════════════════════════════
 // ACTIVITY HEATMAP
