@@ -1,0 +1,303 @@
+{
+  "name": "GS1 — Supabase Proxy v1.0",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## GS1 — Supabase Proxy v1.0\n\n**Purpose:** Authenticated proxy to Supabase that hides the anon key from the public dashboard source code.\n\n**Auth:** Validates GRID proxy token before any query runs. Returns 401 on failure.\n\n**Query types:**\n- `executions` — last N rows from executions table\n- `kpis` — today's counts + 24h success rate\n- `heatmap` — 7-day per-agent-per-day counts\n- `cost` — token usage sums (today + 7d)\n- `snapshots` — V3 workflow_snapshots\n\n**Deployed:** 2026-03-02\n**Webhook path:** /webhook/grid-supa-proxy",
+        "height": 260,
+        "width": 380
+      },
+      "id": "gs1-sticky",
+      "name": "Sticky Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [80, 60]
+    },
+    {
+      "parameters": {
+        "httpMethod": "GET",
+        "path": "grid-supa-proxy",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              { "name": "Access-Control-Allow-Origin", "value": "*" }
+            ]
+          }
+        },
+        "responseMode": "responseNode"
+      },
+      "id": "gs1-webhook",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [260, 340]
+    },
+    {
+      "parameters": {
+        "jsCode": "const PROXY_TOKEN = 'gfndr_px_yH7QMB5FwOu9Uu_jT41Y2mcE';\nconst incoming = $json.query?.token || '';\nif (!incoming || incoming !== PROXY_TOKEN) {\n  return [{ json: { __auth_failed: true } }];\n}\nconst type = $json.query?.type || 'executions';\nconst limit = Math.min(parseInt($json.query?.limit) || 20, 200);\nreturn [{ json: { ...$json, validated: true, queryType: type, queryLimit: limit } }];"
+      },
+      "id": "gs1-validate",
+      "name": "Validate Token",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [480, 340]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "strict" },
+          "conditions": [
+            {
+              "id": "auth-check",
+              "leftValue": "={{ $json.__auth_failed }}",
+              "rightValue": true,
+              "operator": { "type": "boolean", "operation": "equals" }
+            }
+          ],
+          "combinator": "and"
+        }
+      },
+      "id": "gs1-auth-gate",
+      "name": "Auth Failed?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [700, 340]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={ \"error\": \"Unauthorized\", \"code\": 401 }",
+        "options": { "responseCode": 401 }
+      },
+      "id": "gs1-401",
+      "name": "Respond 401",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [920, 220]
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {},
+                "conditions": [{ "leftValue": "={{ $json.queryType }}", "rightValue": "kpis", "operator": { "type": "string", "operation": "equals" } }],
+                "combinator": "and"
+              },
+              "renameOutput": true, "outputKey": "kpis"
+            },
+            {
+              "conditions": {
+                "options": {},
+                "conditions": [{ "leftValue": "={{ $json.queryType }}", "rightValue": "heatmap", "operator": { "type": "string", "operation": "equals" } }],
+                "combinator": "and"
+              },
+              "renameOutput": true, "outputKey": "heatmap"
+            },
+            {
+              "conditions": {
+                "options": {},
+                "conditions": [{ "leftValue": "={{ $json.queryType }}", "rightValue": "cost", "operator": { "type": "string", "operation": "equals" } }],
+                "combinator": "and"
+              },
+              "renameOutput": true, "outputKey": "cost"
+            },
+            {
+              "conditions": {
+                "options": {},
+                "conditions": [{ "leftValue": "={{ $json.queryType }}", "rightValue": "snapshots", "operator": { "type": "string", "operation": "equals" } }],
+                "combinator": "and"
+              },
+              "renameOutput": true, "outputKey": "snapshots"
+            }
+          ]
+        },
+        "fallbackOutput": "extra"
+      },
+      "id": "gs1-route",
+      "name": "Route Query Type",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [920, 440]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{ 'https://fppuoqteleayiepoykyc.supabase.co/rest/v1/executions?select=id,agent_id,success,created_at,tokens_used,input,output&order=created_at.desc&limit=' + $json.queryLimit }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "apikey", "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZwcHVvcXRlbGVheWllcG95a3ljIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE4NjI0ODksImV4cCI6MjA4NzQzODQ4OX0.BlTjMTosZIN5poVrjCAuHCaZPt-_S47YfMvxAGlPfs8" },
+            { "name": "Authorization", "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZwcHVvcXRlbGVheWllcG95a3ljIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE4NjI0ODksImV4cCI6MjA4NzQzODQ4OX0.BlTjMTosZIN5poVrjCAuHCaZPt-_S47YfMvxAGlPfs8" }
+          ]
+        },
+        "options": {}
+      },
+      "id": "gs1-query-executions",
+      "name": "Query Executions",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [1140, 560]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{ 'https://fppuoqteleayiepoykyc.supabase.co/rest/v1/executions?select=success,created_at,agent_id&created_at=gte.' + encodeURIComponent(new Date(Date.now()-86400000).toISOString()) + '&order=created_at.desc' }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "apikey", "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZwcHVvcXRlbGVheWllcG95a3ljIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE4NjI0ODksImV4cCI6MjA4NzQzODQ4OX0.BlTjMTosZIN5poVrjCAuHCaZPt-_S47YfMvxAGlPfs8" },
+            { "name": "Authorization", "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZwcHVvcXRlbGVheWllcG95a3ljIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE4NjI0ODksImV4cCI6MjA4NzQzODQ4OX0.BlTjMTosZIN5poVrjCAuHCaZPt-_S47YfMvxAGlPfs8" }
+          ]
+        },
+        "options": {}
+      },
+      "id": "gs1-query-kpis",
+      "name": "Query KPIs",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [1140, 400]
+    },
+    {
+      "parameters": {
+        "jsCode": "const rows = $input.all().map(i => i.json);\nconst now = new Date();\nconst todayStr = now.toISOString().slice(0,10);\nconst today = rows.filter(r => r.created_at && r.created_at.startsWith(todayStr));\nconst total = today.length;\nconst successful = today.filter(r => r.success !== false).length;\nconst sr = total > 0 ? Math.round((successful / total) * 1000) / 10 : 0;\nconst f4Execs = today.filter(r => {\n  const aid = String(r.agent_id || '').toUpperCase();\n  return aid.includes('F4') || aid.includes('BYRH');\n}).length;\nreturn [{ json: { execsToday: total, successRate: sr, slackEvents: f4Execs, raw24h: rows.length } }];"
+      },
+      "id": "gs1-agg-kpis",
+      "name": "Aggregate KPIs",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1360, 400]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{ 'https://fppuoqteleayiepoykyc.supabase.co/rest/v1/executions?select=agent_id,created_at&created_at=gte.' + encodeURIComponent(new Date(Date.now()-7*86400000).toISOString()) + '&order=created_at.asc' }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "apikey", "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZwcHVvcXRlbGVheWllcG95a3ljIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE4NjI0ODksImV4cCI6MjA4NzQzODQ4OX0.BlTjMTosZIN5poVrjCAuHCaZPt-_S47YfMvxAGlPfs8" },
+            { "name": "Authorization", "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZwcHVvcXRlbGVheWllcG95a3ljIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE4NjI0ODksImV4cCI6MjA4NzQzODQ4OX0.BlTjMTosZIN5poVrjCAuHCaZPt-_S47YfMvxAGlPfs8" }
+          ]
+        },
+        "options": {}
+      },
+      "id": "gs1-query-heatmap",
+      "name": "Query Heatmap",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [1140, 480]
+    },
+    {
+      "parameters": {
+        "jsCode": "const rows = $input.all().map(i => i.json);\nconst dayNames = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];\nconst result = {};\nrows.forEach(row => {\n  if (!row.created_at || !row.agent_id) return;\n  const d = new Date(row.created_at);\n  const day = dayNames[d.getUTCDay()];\n  const agent = String(row.agent_id).toUpperCase().split('-')[0].slice(0,4);\n  if (!result[agent]) result[agent] = {Mon:0,Tue:0,Wed:0,Thu:0,Fri:0,Sat:0,Sun:0};\n  result[agent][day] = (result[agent][day] || 0) + 1;\n});\nreturn [{ json: { heatmap: result, days: dayNames } }];"
+      },
+      "id": "gs1-agg-heatmap",
+      "name": "Aggregate Heatmap",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1360, 480]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{ 'https://fppuoqteleayiepoykyc.supabase.co/rest/v1/executions?select=agent_id,tokens_used,created_at&created_at=gte.' + encodeURIComponent(new Date(Date.now()-7*86400000).toISOString()) + '&tokens_used=not.is.null&order=created_at.asc' }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "apikey", "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZwcHVvcXRlbGVheWllcG95a3ljIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE4NjI0ODksImV4cCI6MjA4NzQzODQ4OX0.BlTjMTosZIN5poVrjCAuHCaZPt-_S47YfMvxAGlPfs8" },
+            { "name": "Authorization", "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZwcHVvcXRlbGVheWllcG95a3ljIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE4NjI0ODksImV4cCI6MjA4NzQzODQ4OX0.BlTjMTosZIN5poVrjCAuHCaZPt-_S47YfMvxAGlPfs8" }
+          ]
+        },
+        "options": {}
+      },
+      "id": "gs1-query-cost",
+      "name": "Query Cost",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [1140, 640]
+    },
+    {
+      "parameters": {
+        "jsCode": "const rows = $input.all().map(i => i.json);\nconst now = new Date();\nconst todayStr = now.toISOString().slice(0,10);\nconst today = rows.filter(r => r.created_at && r.created_at.startsWith(todayStr));\nconst tokensToday = today.reduce((sum, r) => sum + (parseInt(r.tokens_used)||0), 0);\nconst tokens7d = rows.reduce((sum, r) => sum + (parseInt(r.tokens_used)||0), 0);\nconst byAgent = {};\ntoday.forEach(r => {\n  const agent = String(r.agent_id||'').toUpperCase().split('-')[0].slice(0,4);\n  byAgent[agent] = (byAgent[agent]||0) + (parseInt(r.tokens_used)||0);\n});\nreturn [{ json: { tokensToday, tokens7d, byAgent } }];"
+      },
+      "id": "gs1-agg-cost",
+      "name": "Aggregate Cost",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1360, 640]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "https://fppuoqteleayiepoykyc.supabase.co/rest/v1/workflow_snapshots?select=id,snapshot_date,workflow_id,workflow_name,active,node_count&order=snapshot_date.desc&limit=50",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "apikey", "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZwcHVvcXRlbGVheWllcG95a3ljIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE4NjI0ODksImV4cCI6MjA4NzQzODQ4OX0.BlTjMTosZIN5poVrjCAuHCaZPt-_S47YfMvxAGlPfs8" },
+            { "name": "Authorization", "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZwcHVvcXRlbGVheWllcG95a3ljIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE4NjI0ODksImV4cCI6MjA4NzQzODQ4OX0.BlTjMTosZIN5poVrjCAuHCaZPt-_S47YfMvxAGlPfs8" }
+          ]
+        },
+        "options": {}
+      },
+      "id": "gs1-query-snapshots",
+      "name": "Query Snapshots",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [1140, 720]
+    },
+    {
+      "parameters": {
+        "jsCode": "const first = $input.first()?.json;\nconst qType = $('Validate Token').first()?.json?.queryType || 'executions';\nreturn [{ json: { type: qType, data: first, ts: new Date().toISOString() } }];"
+      },
+      "id": "gs1-wrap",
+      "name": "Wrap Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1580, 560]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify($json) }}",
+        "options": { "responseCode": 200 }
+      },
+      "id": "gs1-respond",
+      "name": "Respond with Data",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [1800, 560]
+    }
+  ],
+  "connections": {
+    "Webhook": { "main": [[{ "node": "Validate Token", "type": "main", "index": 0 }]] },
+    "Validate Token": { "main": [[{ "node": "Auth Failed?", "type": "main", "index": 0 }]] },
+    "Auth Failed?": {
+      "main": [
+        [{ "node": "Respond 401", "type": "main", "index": 0 }],
+        [{ "node": "Route Query Type", "type": "main", "index": 0 }]
+      ]
+    },
+    "Route Query Type": {
+      "main": [
+        [{ "node": "Query KPIs", "type": "main", "index": 0 }],
+        [{ "node": "Query Heatmap", "type": "main", "index": 0 }],
+        [{ "node": "Query Cost", "type": "main", "index": 0 }],
+        [{ "node": "Query Snapshots", "type": "main", "index": 0 }],
+        [{ "node": "Query Executions", "type": "main", "index": 0 }]
+      ]
+    },
+    "Query KPIs": { "main": [[{ "node": "Aggregate KPIs", "type": "main", "index": 0 }]] },
+    "Query Heatmap": { "main": [[{ "node": "Aggregate Heatmap", "type": "main", "index": 0 }]] },
+    "Query Cost": { "main": [[{ "node": "Aggregate Cost", "type": "main", "index": 0 }]] },
+    "Aggregate KPIs": { "main": [[{ "node": "Wrap Response", "type": "main", "index": 0 }]] },
+    "Aggregate Heatmap": { "main": [[{ "node": "Wrap Response", "type": "main", "index": 0 }]] },
+    "Aggregate Cost": { "main": [[{ "node": "Wrap Response", "type": "main", "index": 0 }]] },
+    "Query Snapshots": { "main": [[{ "node": "Wrap Response", "type": "main", "index": 0 }]] },
+    "Query Executions": { "main": [[{ "node": "Wrap Response", "type": "main", "index": 0 }]] },
+    "Wrap Response": { "main": [[{ "node": "Respond with Data", "type": "main", "index": 0 }]] }
+  },
+  "settings": { "executionOrder": "v1" },
+  "staticData": null,
+  "pinData": {}
+}

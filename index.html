@@ -13,7 +13,7 @@
    Palette:   Amber-gold on deep navy
    ═══════════════════════════════════════════════════════ */
 :root{
-  --bg:#04070E;--surf:#090F1C;--pnl:#0D1623;--bdr:#162236;--bdr2:#243C5A;
+  --bg:#04070E;--surf:#090F1C;--pnl:#0D1623;--bdr:#1A2C47;--bdr2:#243C5A;
   --gold:#E8A020;--gold2:#C07818;--blue:#3B82F6;--grn:#10B981;--red:#EF4444;
   --amb:#F59E0B;--pur:#8B5CF6;--txt:#C8D8E8;--muted:#4A6A8A;--dim:#1E3350;
   --display:'Syne',sans-serif;--mono:'Share Tech Mono',monospace;
@@ -34,13 +34,15 @@ body{
 }
 @keyframes gridDrift{0%{background-position:0 0,0 0,0 0}100%{background-position:28px 28px,0 0,0 0}}
 /* Scanline */
-body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.045) 2px,rgba(0,0,0,0.045) 3px);}
+body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;background:repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,0,0,0.025) 3px,rgba(0,0,0,0.025) 4px);}
 
 /* TOP BAR */
 #topbar{grid-column:1/-1;background:var(--surf);border-bottom:1px solid var(--bdr);display:flex;align-items:center;padding:0 16px;gap:12px;z-index:100;position:relative;}
 .logo{display:flex;align-items:center;gap:8px;font-family:var(--display);font-weight:800;font-size:14px;letter-spacing:.18em;color:var(--gold);text-transform:uppercase;flex-shrink:0;}
-.logo-hex{width:24px;height:24px;background:var(--gold);flex-shrink:0;clip-path:polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%);position:relative;box-shadow:0 0 14px rgba(232,160,32,0.35);}
-.logo-hex::after{content:'';position:absolute;inset:5px;background:var(--surf);clip-path:polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%);}
+.logo-svg{flex-shrink:0;transform-box:fill-box;transform-origin:center;animation:hexIn .8s cubic-bezier(.34,1.56,.64,1) both,hexGlow 3s ease-in-out 1.5s infinite;}
+@keyframes hexIn{from{opacity:0;transform:scale(.4) rotate(-30deg)}to{opacity:1;transform:scale(1) rotate(0deg)}}
+@keyframes hexGlow{0%,100%{filter:drop-shadow(0 0 3px rgba(232,160,32,.35))}50%{filter:drop-shadow(0 0 12px rgba(232,160,32,.72))}}
+.brand-tag{font-size:8px;letter-spacing:.22em;color:var(--gold2);text-transform:uppercase;opacity:.65;white-space:nowrap;flex-shrink:0;}
 .tsep{width:1px;height:28px;background:var(--bdr);flex-shrink:0;}
 .ttag{font-size:9px;letter-spacing:.2em;color:var(--muted);text-transform:uppercase;white-space:nowrap;}
 .tbtn{display:flex;align-items:center;gap:6px;padding:5px 12px;border:1px solid var(--bdr);border-radius:2px;font-family:var(--mono);font-size:10px;color:var(--muted);cursor:pointer;background:transparent;transition:all .15s;white-space:nowrap;}
@@ -155,7 +157,7 @@ kbd{font-size:9px;padding:1px 4px;border:1px solid var(--bdr2);border-radius:2px
 /* FLEET */
 #fleet{padding:14px;overflow-y:auto;display:grid;grid-template-columns:repeat(auto-fill,minmax(258px,1fr));gap:10px;align-content:start;width:100%;}
 .ac{background:var(--pnl);border:1px solid var(--bdr);padding:14px;cursor:pointer;transition:all .2s;position:relative;overflow:hidden;}
-.acbar{position:absolute;top:0;left:0;right:0;height:2px;opacity:0;transition:opacity .2s;}
+.acbar{position:absolute;top:0;left:0;bottom:0;width:3px;opacity:0;transition:opacity .2s;}
 .ac:hover{border-color:var(--gold2);background:rgba(232,160,32,.025);transform:translateY(-2px);box-shadow:0 12px 32px rgba(0,0,0,.5);}
 .ac:hover .acbar{opacity:1;}
 .ach{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
@@ -187,7 +189,7 @@ kbd{font-size:9px;padding:1px 4px;border:1px solid var(--bdr2);border-radius:2px
 
 /* LOGS */
 #logs{overflow-y:auto;width:100%;height:100%;}
-.lh,.lr{display:grid;grid-template-columns:148px 44px 80px 1fr 84px 62px;border-bottom:1px solid var(--bdr);font-size:10px;height:34px;align-items:center;}
+.lh,.lr{display:grid;grid-template-columns:148px 60px 80px 1fr 84px 62px;border-bottom:1px solid var(--bdr);font-size:10px;height:34px;align-items:center;}
 .lh>*,.lr>*{padding:0 10px;}
 .lh{background:var(--surf);border-bottom:2px solid var(--bdr2);position:sticky;top:0;z-index:10;font-size:8px;letter-spacing:.15em;color:var(--muted);text-transform:uppercase;}
 .lr{cursor:default;}
@@ -222,20 +224,25 @@ kbd{font-size:9px;padding:1px 4px;border:1px solid var(--bdr2);border-radius:2px
 .cmdrk{margin-left:auto;font-size:8px;color:var(--dim);}
 .cmdftr{padding:7px 16px;border-top:1px solid var(--bdr);font-size:9px;color:var(--dim);display:flex;gap:14px;}
 
-/* AGENT MODAL */
-#amod{position:fixed;inset:0;background:rgba(4,7,14,.92);backdrop-filter:blur(8px);z-index:900;display:none;align-items:center;justify-content:center;}
-#amod.open{display:flex;}
-.amc{width:540px;background:var(--pnl);border:1px solid var(--bdr2);box-shadow:0 24px 64px rgba(0,0,0,.8);max-height:82vh;overflow-y:auto;}
-.amhdr{padding:18px 20px;border-bottom:1px solid var(--bdr);display:flex;align-items:center;gap:14px;}
-.amico{width:46px;height:46px;border-radius:3px;display:flex;align-items:center;justify-content:center;font-family:var(--display);font-weight:800;font-size:15px;flex-shrink:0;}
+/* AGENT DETAIL DRAWER — right-side slide-in panel */
+#amod{position:fixed;top:52px;right:0;bottom:0;width:480px;background:var(--surf);border-left:1px solid var(--bdr2);z-index:900;display:flex;flex-direction:column;transform:translateX(100%);transition:transform .25s ease;overflow:hidden;}
+#amod.open{transform:translateX(0);}
+.amc{display:flex;flex-direction:column;height:100%;}
+.amhdr{padding:16px 18px;border-bottom:1px solid var(--bdr);display:flex;align-items:center;gap:12px;flex-shrink:0;}
+.amico{width:40px;height:40px;border-radius:3px;display:flex;align-items:center;justify-content:center;font-family:var(--display);font-weight:800;font-size:14px;flex-shrink:0;}
 .amcls{margin-left:auto;width:26px;height:26px;border:1px solid var(--bdr);border-radius:2px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--muted);transition:all .15s;font-size:14px;}
 .amcls:hover{color:var(--red);border-color:var(--red);}
-.ambd{padding:20px;}
-.amrow{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--bdr);font-size:11px;}
+.ambd{padding:16px 18px;overflow-y:auto;flex:1;}
+.amrow{display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid var(--bdr);font-size:11px;}
 .amrow:last-child{border-bottom:none;}
 .amk{color:var(--muted);font-size:9px;text-transform:uppercase;letter-spacing:.1em;}
 .amv{color:var(--txt);}
 .am-chart-lbl{font-size:8px;color:var(--muted);letter-spacing:.15em;text-transform:uppercase;margin-bottom:8px;}
+/* Recent execs mini-table in drawer */
+.am-execs{margin-top:14px;padding-top:14px;border-top:1px solid var(--bdr);}
+.am-exec-row{display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid var(--bdr);font-size:9px;color:var(--muted);cursor:pointer;transition:background .1s;}
+.am-exec-row:hover{background:rgba(232,160,32,.03);}
+.am-exec-row:last-child{border-bottom:none;}
 
 /* TOAST STACK */
 #toast-stack{position:fixed;top:68px;right:16px;z-index:2000;display:flex;flex-direction:column;gap:6px;pointer-events:none;width:280px;}
@@ -285,13 +292,33 @@ kbd{font-size:9px;padding:1px 4px;border:1px solid var(--bdr2);border-radius:2px
 ::-webkit-scrollbar-track{background:var(--bg);}
 ::-webkit-scrollbar-thumb{background:var(--bdr2);border-radius:2px;}
 ::-webkit-scrollbar-thumb:hover{background:var(--gold2);}
+
+/* SKELETON LOADING */
+@keyframes shimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}
+.kpi[data-loading] .kv,.kpi[data-loading] .kd{
+  background:linear-gradient(90deg,var(--bdr) 25%,#243C5A 50%,var(--bdr) 75%);
+  background-size:200% 100%;animation:shimmer 1.4s ease infinite;
+  color:transparent!important;border-radius:2px;display:inline-block;min-width:60px;
+}
+.kpi[data-loading] .kspk{opacity:.1;}
+
+/* ALERTS BADGE */
+.nb.has-alert::after{content:'';position:absolute;top:5px;right:5px;width:6px;height:6px;border-radius:50%;background:var(--red);box-shadow:0 0 6px var(--red);}
 </style>
 </head>
 <body>
 
 <!-- TOP BAR -->
 <header id="topbar">
-  <div class="logo"><div class="logo-hex"></div>GRID OPS</div>
+  <div class="logo">
+    <svg class="logo-svg" width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+      <polygon points="12,1 23,6.5 23,17.5 12,23 1,17.5 1,6.5" fill="rgba(232,160,32,0.12)" stroke="#E8A020" stroke-width="1.5"/>
+      <polygon points="12,6.5 18,9.75 18,14.75 12,18 6,14.75 6,9.75" fill="rgba(232,160,32,0.08)" stroke="#C07818" stroke-width="1"/>
+      <text x="12" y="15.5" text-anchor="middle" font-family="Syne,sans-serif" font-weight="800" font-size="9" fill="#E8A020">F</text>
+    </svg>
+    GRID OPS
+  </div>
+  <span class="brand-tag">Land &amp; Expand · AI Infrastructure</span>
   <div class="tsep"></div>
   <span class="ttag">FoundryScale.AI · v3.2</span>
   <button class="tbtn" onclick="openCmd()">
@@ -376,6 +403,12 @@ kbd{font-size:9px;padding:1px 4px;border:1px solid var(--bdr2);border-radius:2px
           <div class="kv" id="kpi-slack">0</div>
           <div class="kd">routed by F4 today</div>
           <div class="kspk" id="kspk-slack"></div>
+        </div>
+        <div class="kpi">
+          <div class="kl">Tokens Today</div>
+          <div class="kv p" id="kpi-tokens">—</div>
+          <div class="kd" id="kpi-tokens-cost">cost loading...</div>
+          <div class="kspk" id="kspk-tokens"></div>
         </div>
       </div>
       <div id="net-wrap">
@@ -544,9 +577,10 @@ function makeSvgSparkline(data, color, w, h) {
 }
 
 // ═══════════════════════════════════════════════════
-// DATA
+// DATA — static fallback constants (overwritten by initDashboard() on load)
+// When grid-dashboard-data.json is deployed with ClickUp API key, live data replaces these.
 // ═══════════════════════════════════════════════════
-const AGENTS = [
+let AGENTS = [
   { id:'F4', name:'GRID Router', wfId:'byrHGwTTJjYIH099', type:'Orchestrator', trigger:'Webhook', status:'active', sr:99.1, execs:83, lastRun:'2m ago', color:'#E8A020', next:'Always-on', runs7d:621, avgDur:'320ms', errors7d:6, spark:[88,92,95,98,97,99,99], desc:'Single Slack entry point. Routes /email, /research, /oracle, /agent-info and @mentions to sub-workflows via Execute Sub-workflow.' },
   { id:'G1', name:'Email Generator', wfId:'3Ev0XLREXb97mFV3', type:'Semi-Autonomous', trigger:'Slack /email', status:'active', sr:96.3, execs:31, lastRun:'14m ago', color:'#3B82F6', next:'On demand', runs7d:217, avgDur:'28s', errors7d:8, spark:[28,31,35,40,29,33,31], desc:'/email → modal → Perplexity + Apify LinkedIn → Claude Sonnet 4.6 → personalized email in #prospectemail.' },
   { id:'R2', name:'Research Intake', wfId:'fiytN1BEtKnxDwJ9', type:'Autonomous', trigger:'Slack /research', status:'active', sr:94.7, execs:12, lastRun:'1h ago', color:'#10B981', next:'On demand', runs7d:84, avgDur:'45s', errors7d:5, spark:[10,14,9,12,11,13,12], desc:'Accepts /research URL or topic. Runs Perplexity + optional YouTube transcript. Stores in Supabase, posts to #research-intake.' },
@@ -566,7 +600,7 @@ const KPI_SPARKS = {
   slack: [71, 78, 83, 76, 88, 79, 83],
 };
 
-const SPRINT_TASKS = [
+let SPRINT_TASKS = [
   {col:'in_progress', title:'J2 Job Doc Generator', tags:['N8N','Claude'], id:'86b8q2y77'},
   {col:'in_progress', title:'AssistantBridge Watch final test', tags:['Android'], id:'86b8x1a23'},
   {col:'in_progress', title:'V3 Drift Detector — add email alert', tags:['N8N'], id:'86b8q2yb7'},
@@ -632,6 +666,93 @@ const CONFIG_DATA = [
 ];
 
 // ═══════════════════════════════════════════════════
+// LIVE DASHBOARD INIT — fetches from grid-dashboard-data webhook
+// Requires grid-dashboard-data.json deployed with valid ClickUp API key.
+// Falls back to static constants above if fetch fails or webhook not yet deployed.
+// ═══════════════════════════════════════════════════
+const DASHBOARD_URL = 'https://cprojects1.app.n8n.cloud/webhook/grid-dashboard';
+
+function mergeAgentData(dashData) {
+  if (!dashData) return null;
+  const liveAgents = dashData.layers?.architect?.items || [];
+  if (!liveAgents.length) return null;
+  return liveAgents.map(item => {
+    const existing = AGENTS.find(a => a.id === item.id || a.name === item.name) || {};
+    return {
+      ...existing,
+      id: item.id || existing.id,
+      name: item.name || existing.name,
+      status: (item.status || existing.status || 'active').toLowerCase().replace(' ', '-'),
+      type: item.agentType || existing.type || 'Tool',
+      wfId: item.n8n_id || existing.wfId || '',
+      color: existing.color || '#4A6A8A',
+      sr: item.successRate ?? existing.sr ?? 0,
+      execs: item.execsToday ?? existing.execs ?? 0,
+      runs7d: item.runs7d ?? existing.runs7d ?? 0,
+      avgDur: item.avgDur || existing.avgDur || '—',
+      errors7d: item.errors7d ?? existing.errors7d ?? 0,
+      lastRun: item.lastRun || existing.lastRun || '—',
+      next: item.nextRun || existing.next || '—',
+      trigger: item.trigger || existing.trigger || 'webhook',
+      spark: item.spark || existing.spark || [0,0,0,0,0,0,0],
+      desc: item.description || existing.desc || '',
+    };
+  });
+}
+
+function renderSprintMini() {
+  const el = document.getElementById('sprintmini');
+  if (!el) return;
+  SPRINT_TASKS.filter(t => t.col !== 'done').slice(0, 6).forEach((t, i) => {
+    const row = mk('div', {cls:'spmi', click:() => setTab('sprint')});
+    const dot = mk('div', {cls:'pdot', style:'background:' + PCOLORS[i % 3]});
+    const title = mk('span', {text: t.title, style:'flex:1;font-size:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis'});
+    const status = mk('span', {text: t.col.replace('_',' '), style:'font-size:9px;color:var(--dim);text-transform:uppercase;letter-spacing:.08em;flex-shrink:0'});
+    row.append(dot, title, status);
+    el.appendChild(row);
+  });
+}
+
+async function initDashboard() {
+  const dash = await fetch(DASHBOARD_URL + '?token=' + PROXY_TOKEN)
+    .then(r => r.ok ? r.json() : null)
+    .catch(() => null);
+
+  if (dash) {
+    const merged = mergeAgentData(dash);
+    if (merged && merged.length) {
+      AGENTS.length = 0;
+      merged.forEach(a => AGENTS.push(a));
+    }
+    const liveSprint = dash.layers?.pm?.sprintBoard || [];
+    if (liveSprint.length) {
+      SPRINT_TASKS.length = 0;
+      liveSprint.forEach(t => SPRINT_TASKS.push({
+        col: (t.status || 'open').toLowerCase().replace(' ', '_'),
+        title: t.name || t.title || '',
+        tags: t.tags || [],
+        id: t.id || '',
+      }));
+      const sprintMini = document.getElementById('sprintmini');
+      if (sprintMini) { clr(sprintMini); renderSprintMini(); }
+    }
+    // Update agent count pill using safe DOM (no innerHTML)
+    const agentPill = [...document.querySelectorAll('.pill')].find(p => p.textContent.includes('Agent'));
+    if (agentPill) {
+      clr(agentPill);
+      agentPill.appendChild(mk('div', {cls:'dot a'}));
+      agentPill.appendChild(document.createTextNode(' ' + AGENTS.length + ' Agents'));
+    }
+  }
+
+  // Allow fleet/sprint to re-render with updated data
+  fleetDone = false;
+  sprintDone = false;
+}
+
+window.addEventListener('DOMContentLoaded', () => { initDashboard(); });
+
+// ═══════════════════════════════════════════════════
 // CLOCK
 // ═══════════════════════════════════════════════════
 function updateClock() {
@@ -672,14 +793,26 @@ function countUp(el, target, duration) {
 }
 
 // ═══════════════════════════════════════════════════
-// KPI SPARKLINES + COUNT-UP
+// GS1 PROXY — single authenticated endpoint for all Supabase queries
+// GS1 — Supabase Proxy (N8N Cloud ID: 8k2m4YLUXUEM7ian)
 // ═══════════════════════════════════════════════════
-(function initKPIs() {
-  const execEl = document.getElementById('kpi-exec');
-  const slackEl = document.getElementById('kpi-slack');
-  if (execEl) countUp(execEl, 247, 1400);
-  if (slackEl) countUp(slackEl, 83, 1200);
+const GS1_URL = 'https://cprojects1.app.n8n.cloud/webhook/grid-supa-proxy';
+const PROXY_TOKEN = 'gfndr_px_yH7QMB5FwOu9Uu_jT41Y2mcE';
 
+async function gs1Query(type, extra) {
+  try {
+    const params = new URLSearchParams({ type, token: PROXY_TOKEN, ...(extra||{}) });
+    const res = await fetch(`${GS1_URL}?${params}`, { headers: { Accept: 'application/json' } });
+    if (!res.ok) return null;
+    const body = await res.json();
+    return body.data || body;
+  } catch { return null; }
+}
+
+// ═══════════════════════════════════════════════════
+// KPI SPARKLINES + COUNT-UP (live data when GS1 deployed, falls back to static)
+// ═══════════════════════════════════════════════════
+function renderSparklines() {
   const configs = [
     {id:'kspk-exec',  data:KPI_SPARKS.exec,   color:'#10B981'},
     {id:'kspk-agents',data:KPI_SPARKS.agents,  color:'#E8A020'},
@@ -691,11 +824,43 @@ function countUp(el, target, duration) {
     const el = document.getElementById(cfg.id);
     if (!el) return;
     const svg = makeSvgSparkline(cfg.data, cfg.color);
-    svg.style.width = '100%';
-    svg.style.height = '100%';
+    svg.style.width = '100%'; svg.style.height = '100%';
     el.appendChild(svg);
   });
-})();
+}
+
+async function initKPIs() {
+  // Show skeleton loading state while fetching
+  document.querySelectorAll('.kpi').forEach(k => k.setAttribute('data-loading','1'));
+
+  // Render static sparklines immediately (no loading dependency)
+  renderSparklines();
+
+  // Attempt to fetch live counts from GS1 proxy
+  const kpiData = await gs1Query('kpis');
+
+  // Remove skeleton state
+  document.querySelectorAll('.kpi').forEach(k => k.removeAttribute('data-loading'));
+
+  const execEl = document.getElementById('kpi-exec');
+  const slackEl = document.getElementById('kpi-slack');
+  const srEl = document.getElementById('kpi-sr');
+
+  if (kpiData && kpiData.execsToday !== undefined) {
+    // Live data from Supabase via GS1 proxy
+    if (execEl) countUp(execEl, kpiData.execsToday, 1400);
+    if (slackEl) countUp(slackEl, kpiData.slackEvents || 0, 1200);
+    if (srEl) srEl.textContent = (kpiData.successRate || 0).toFixed(1) + '%';
+  } else {
+    // Fallback to static values when GS1 not yet deployed
+    if (execEl) countUp(execEl, 247, 1400);
+    if (slackEl) countUp(slackEl, 83, 1200);
+  }
+}
+
+// Re-poll KPIs every 5 minutes
+initKPIs();
+setInterval(initKPIs, 300000);
 
 // ═══════════════════════════════════════════════════
 // QURA INTEL
@@ -751,10 +916,8 @@ function showToast(agent, message, color) {
 }
 
 // ═══════════════════════════════════════════════════
-// EXEC FEED — live Supabase polling
+// EXEC FEED — live Supabase polling via GS1 proxy
 // ═══════════════════════════════════════════════════
-const SUPA_URL = 'https://fppuoqteleayiepoykyc.supabase.co/rest/v1/executions';
-const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZwcHVvcXRlbGVheWllcG95a3ljIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE4NjI0ODksImV4cCI6MjA4NzQzODQ4OX0.BlTjMTosZIN5poVrjCAuHCaZPt-_S47YfMvxAGlPfs8';
 
 // Agent ID → display info lookup (maps Supabase agent UUIDs to AGENTS array)
 const AGENT_UUID_MAP = {
@@ -803,20 +966,7 @@ function renderFeedRow(e, isNew) {
 
 async function pollSupabase() {
   try {
-    const params = new URLSearchParams({
-      select: 'id,agent_id,success,created_at,tokens_used,input,output',
-      order: 'created_at.desc',
-      limit: '20',
-    });
-    const res = await fetch(`${SUPA_URL}?${params}`, {
-      headers: {
-        'apikey': SUPA_KEY,
-        'Authorization': `Bearer ${SUPA_KEY}`,
-        'Accept': 'application/json',
-      }
-    });
-    if (!res.ok) throw new Error('HTTP ' + res.status);
-    const rows = await res.json();
+    const rows = await gs1Query('executions', { limit: '20' });
     if (!rows || !rows.length) return false;
 
     // Update infra status pill
@@ -873,60 +1023,63 @@ async function refreshFeed() {
 }
 
 // ═══════════════════════════════════════════════════
-// ACTIVITY HEATMAP
+// ACTIVITY HEATMAP — real data from GS1, falls back to synthetic
 // ═══════════════════════════════════════════════════
-(function renderHeatmap() {
-  const el = document.getElementById('heatmap');
-  const days = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
-
-  // Header row
+function buildHeatmapRows(el, days, countsMap) {
+  // countsMap: { 'F4': {Mon:45, Tue:38, ...}, ... } OR null for synthetic fallback
   const hdrRow = mk('div', {cls:'hm-header-row'});
   hdrRow.appendChild(mk('div', {cls:'hm-header-spacer'}));
   days.forEach(d => hdrRow.appendChild(mk('div', {cls:'hm-day-lbl', text: d})));
   el.appendChild(hdrRow);
 
-  // Agent rows with synthetic data
   AGENTS.forEach(a => {
-    const base = a.runs7d / 7;
-    const dayCounts = days.map((_, i) => {
-      if (a.trigger.includes('Cron Mon')) return (i === 0) ? Math.round(a.runs7d * 0.9 + 1) : 0;
-      if (a.trigger.includes('Cron')) return Math.round(Math.random() * 2);
-      return Math.max(0, Math.round(base * (0.3 + Math.random() * 1.4)));
-    });
+    let dayCounts;
+    if (countsMap && countsMap[a.id]) {
+      dayCounts = days.map(d => countsMap[a.id][d] || 0);
+    } else {
+      // Synthetic fallback (deterministic based on runs7d, no Math.random)
+      const base = a.runs7d / 7;
+      dayCounts = days.map((_, i) => {
+        if (a.trigger.includes('Cron Mon')) return i === 0 ? Math.round(a.runs7d * 0.9 + 1) : 0;
+        if (a.trigger.includes('Cron')) return i === 0 ? 1 : 0;
+        return Math.max(0, Math.round(base * (0.5 + (i % 3) * 0.25)));
+      });
+    }
     const maxCount = Math.max(...dayCounts, 1);
 
     const row = mk('div', {cls:'hm-row'});
-    const lbl = mk('div', {cls:'hm-agent-lbl', text: a.id, style:`color:${a.color}`});
-    row.appendChild(lbl);
-
+    row.appendChild(mk('div', {cls:'hm-agent-lbl', text: a.id, style:`color:${a.color}`}));
     dayCounts.forEach(count => {
       const alpha = count === 0 ? 0.08 : (0.15 + (count / maxCount) * 0.8);
-      const cell = mk('div', {
+      row.appendChild(mk('div', {
         cls:'hm-cell',
         style:`background:${a.color};opacity:${alpha.toFixed(2)}`,
         title:`${a.id} · ${count} exec${count !== 1 ? 's' : ''}`
-      });
-      row.appendChild(cell);
+      }));
     });
     el.appendChild(row);
   });
-})();
+}
+
+async function renderHeatmap() {
+  const el = document.getElementById('heatmap');
+  if (!el) return;
+  clr(el);
+  const days = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+
+  // Try live data from GS1 proxy
+  const heatData = await gs1Query('heatmap');
+  buildHeatmapRows(el, days, heatData?.heatmap || null);
+}
+
+renderHeatmap();
 
 // ═══════════════════════════════════════════════════
 // SPRINT MINI
 // ═══════════════════════════════════════════════════
 const PCOLORS = ['#EF4444','#F59E0B','#10B981'];
-(function() {
-  const el = document.getElementById('sprintmini');
-  SPRINT_TASKS.filter(t => t.col !== 'done').slice(0, 6).forEach((t, i) => {
-    const row = mk('div', {cls:'spmi', click:() => setTab('sprint')});
-    const dot = mk('div', {cls:'pdot', style:`background:${PCOLORS[i % 3]}`});
-    const title = mk('span', {text: t.title, style:'flex:1;font-size:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis'});
-    const status = mk('span', {text: t.col.replace('_',' '), style:'font-size:9px;color:var(--dim);text-transform:uppercase;letter-spacing:.08em;flex-shrink:0'});
-    row.append(dot, title, status);
-    el.appendChild(row);
-  });
-})();
+// renderSprintMini() is defined in initDashboard section above — call it here for initial render
+renderSprintMini();
 
 // ═══════════════════════════════════════════════════
 // FLEET
@@ -938,7 +1091,7 @@ function renderFleet() {
   AGENTS.forEach(a => {
     const card = mk('div', {cls:'ac', click:() => openModal(a)});
 
-    const topbar2 = mk('div', {cls:'acbar', style:`background:linear-gradient(90deg,${a.color},transparent)`});
+    const topbar2 = mk('div', {cls:'acbar', style:`background:linear-gradient(180deg,${a.color},${a.color}88,transparent)`});
 
     // Header
     const hdr = mk('div', {cls:'ach'});
@@ -1018,15 +1171,7 @@ async function renderLogs() {
   if (logsDone) return; logsDone = true;
   const el = document.getElementById('logbody');
   try {
-    const params = new URLSearchParams({
-      select: 'id,agent_id,success,created_at,tokens_used,input',
-      order: 'created_at.desc', limit: '80',
-    });
-    const res = await fetch(`${SUPA_URL}?${params}`, {
-      headers: { 'apikey': SUPA_KEY, 'Authorization': `Bearer ${SUPA_KEY}`, 'Accept': 'application/json' }
-    });
-    if (!res.ok) throw new Error('HTTP ' + res.status);
-    const rows = await res.json();
+    const rows = await gs1Query('executions', { limit: '80' });
     if (!rows || !rows.length) {
       const row = mk('div', {cls:'lr', style:'grid-column:1/-1;color:var(--muted);padding:20px'});
       row.appendChild(mk('span', {text:'No execution data in Supabase yet.'}));
@@ -1081,65 +1226,100 @@ function renderConfig() {
   });
 }
 
-// ═══════════════════════════════════════════════════
-// KPI AUTO-INCREMENT
-// ═══════════════════════════════════════════════════
-setInterval(() => {
-  const ex = document.getElementById('kpi-exec');
-  if (ex && Math.random() > 0.4) ex.textContent = parseInt(ex.textContent) + 1;
-  const sl = document.getElementById('kpi-slack');
-  if (sl && Math.random() > 0.7) sl.textContent = parseInt(sl.textContent) + 1;
-}, 8000);
+// KPI auto-increment removed — replaced by live Supabase polling (Phase 2a)
 
 // ═══════════════════════════════════════════════════
-// AGENT MODAL
+// AGENT DETAIL DRAWER (replaces centered modal)
+// Slides in from right. Fetches last 5 executions from Supabase for live data.
 // ═══════════════════════════════════════════════════
-function openModal(a) {
+async function openModal(a) {
   const ico = document.getElementById('amico');
   ico.textContent = a.id;
-  ico.style.cssText = `background:${a.color}18;border:1px solid ${a.color}40;color:${a.color};width:46px;height:46px;border-radius:3px;display:flex;align-items:center;justify-content:center;font-family:var(--display);font-weight:800;font-size:15px;flex-shrink:0;box-shadow:0 0 16px ${a.color}33;`;
+  ico.style.cssText = 'background:' + a.color + '18;border:1px solid ' + a.color + '40;color:' + a.color + ';width:40px;height:40px;border-radius:3px;display:flex;align-items:center;justify-content:center;font-family:var(--display);font-weight:800;font-size:14px;flex-shrink:0;box-shadow:0 0 14px ' + a.color + '33;';
   document.getElementById('amname').textContent = a.name;
-  document.getElementById('amid').textContent = a.wfId;
+  document.getElementById('amid').textContent = a.wfId || a.id;
 
   const body = document.getElementById('ambd');
   clr(body);
 
   const rows = [
-    {k:'Status', v:a.status, cls:`abadge ${a.status}`},
-    {k:'Type', v:a.type},
-    {k:'Trigger', v:a.trigger},
-    {k:'Success Rate (7d)', v:a.sr + '%', col:a.color},
+    {k:'Status',           v:a.status,                   cls:'abadge ' + a.status},
+    {k:'Type',             v:a.type},
+    {k:'Trigger',          v:a.trigger},
+    {k:'Success Rate (7d)',v:a.sr + '%',                 col:a.color},
     {k:'Executions Today', v:String(a.execs)},
-    {k:'7-Day Runs', v:String(a.runs7d)},
-    {k:'Avg Duration', v:a.avgDur},
-    {k:'Errors (7d)', v:String(a.errors7d), col: a.errors7d > 0 ? 'var(--red)' : 'var(--grn)'},
-    {k:'Last Run', v:a.lastRun},
-    {k:'Next Run', v:a.next},
+    {k:'7-Day Runs',       v:String(a.runs7d)},
+    {k:'Avg Duration',     v:a.avgDur},
+    {k:'Errors (7d)',      v:String(a.errors7d),         col: a.errors7d > 0 ? 'var(--red)' : 'var(--grn)'},
+    {k:'Last Run',         v:a.lastRun},
+    {k:'Next Run',         v:a.next},
   ];
   rows.forEach(r => {
     const row = mk('div', {cls:'amrow'});
     row.appendChild(mk('span', {cls:'amk', text: r.k}));
-    const vEl = r.cls ? mk('span', {cls:r.cls, text: r.v}) : mk('span', {cls:'amv', text: r.v, style: r.col ? `color:${r.col}` : ''});
+    const vEl = r.cls ? mk('span', {cls:r.cls, text: r.v})
+                      : mk('span', {cls:'amv', text: r.v, style: r.col ? 'color:' + r.col : ''});
     row.appendChild(vEl);
     body.appendChild(row);
   });
 
   // Sparkline chart
-  const chartSection = mk('div', {style:'margin-top:16px;padding-top:16px;border-top:1px solid var(--bdr)'});
+  const chartSection = mk('div', {style:'margin-top:14px;padding-top:14px;border-top:1px solid var(--bdr)'});
   chartSection.appendChild(mk('div', {cls:'am-chart-lbl', text:'7-Day Execution Trend'}));
-  const spkSvg = makeSvgSparkline(a.spark, a.color, 480, 48);
-  spkSvg.style.width = '100%';
-  spkSvg.style.height = '48px';
+  const spkSvg = makeSvgSparkline(a.spark, a.color, 440, 44);
+  spkSvg.style.width = '100%'; spkSvg.style.height = '44px';
   chartSection.appendChild(spkSvg);
   body.appendChild(chartSection);
 
   // Description
-  body.appendChild(mk('div', {text: a.desc, style:'margin-top:14px;padding-top:14px;border-top:1px solid var(--bdr);font-size:10px;color:var(--muted);line-height:1.75'}));
+  body.appendChild(mk('div', {text: a.desc, style:'margin-top:12px;padding-top:12px;border-top:1px solid var(--bdr);font-size:10px;color:var(--muted);line-height:1.75'}));
+
+  // Recent executions section (fetched async)
+  const execsSection = mk('div', {cls:'am-execs'});
+  execsSection.appendChild(mk('div', {cls:'am-chart-lbl', text:'Recent Executions'}));
+  const loadingRow = mk('div', {cls:'am-exec-row', text: 'Loading...', style:'color:var(--dim)'});
+  execsSection.appendChild(loadingRow);
+  body.appendChild(execsSection);
 
   document.getElementById('amod').classList.add('open');
+  // Adjust main content when drawer opens (mirrors chat panel behavior)
+  document.getElementById('main').style.marginRight = '480px';
   closeCmd();
+
+  // Async: fetch last 5 executions for this agent via GS1 proxy
+  try {
+    const agentIdLower = a.id.toLowerCase();
+    const allExecs = await gs1Query('executions', { limit: '50' }) || [];
+    const execs = allExecs.filter(ex => (ex.agent_id||'').toLowerCase() === agentIdLower).slice(0, 5);
+    clr(execsSection);
+    execsSection.appendChild(mk('div', {cls:'am-chart-lbl', text:'Recent Executions'}));
+    if (!execs.length) {
+      execsSection.appendChild(mk('div', {cls:'am-exec-row', text:'No executions found', style:'color:var(--dim)'}));
+    } else {
+      execs.forEach(ex => {
+        const row = mk('div', {cls:'am-exec-row'});
+        const ok = ex.success !== false;
+        const badge = mk('span', {cls:'fst ' + (ok ? 'ok' : 'err'), text: ok ? 'OK' : 'ERR'});
+        const ts = mk('span', {text: relativeTime(ex.created_at), style:'min-width:28px'});
+        const tok = mk('span', {text: ex.tokens_used ? ex.tokens_used + 't' : '—', style:'color:var(--dim)'});
+        const desc = typeof ex.input === 'object' && ex.input
+          ? String(ex.input.source || ex.input.message || JSON.stringify(ex.input)).slice(0, 45)
+          : String(ex.input || '').slice(0, 45);
+        const descEl = mk('span', {text: desc || 'exec', style:'flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap'});
+        row.append(badge, ts, descEl, tok);
+        execsSection.appendChild(row);
+      });
+    }
+  } catch { /* silently fail — static data still shown above */ }
 }
-function closeModal() { document.getElementById('amod').classList.remove('open'); }
+
+function closeModal() {
+  document.getElementById('amod').classList.remove('open');
+  // Only restore margin if chat isn't also open
+  if (!document.getElementById('chat').classList.contains('open')) {
+    document.getElementById('main').style.marginRight = '0';
+  }
+}
 
 // ═══════════════════════════════════════════════════
 // COMMAND PALETTE
@@ -1522,6 +1702,73 @@ canvas.addEventListener('click', () => { if (hovNode) openModal(hovNode.agent); 
 
 window.addEventListener('load', () => { resizeCanvas(); drawNet(); });
 window.addEventListener('resize', resizeCanvas);
+
+// ═══════════════════════════════════════════════════
+// ALERTS — client-side rules evaluated against live agent data
+// Runs after initDashboard resolves. Badges nav rail icon on active alerts.
+// ═══════════════════════════════════════════════════
+const ALERT_RULES = [
+  { metric:'sr',       op:'<',  threshold:90,     sev:'error', msg:'success rate below 90%' },
+  { metric:'avgDurMs', op:'>',  threshold:120000, sev:'warn',  msg:'avg duration over 2 min' },
+  { metric:'errors7d', op:'>',  threshold:10,     sev:'warn',  msg:'error rate: 10+ errors/7d' },
+];
+
+function parseDuration(str) {
+  if (!str || str === '—') return 0;
+  const s = String(str);
+  if (s.endsWith('ms')) return parseFloat(s);
+  if (s.endsWith('s'))  return parseFloat(s) * 1000;
+  if (s.endsWith('m'))  return parseFloat(s) * 60000;
+  return 0;
+}
+
+function evaluateAlerts() {
+  const activeAlerts = [];
+  AGENTS.forEach(a => {
+    const metrics = { sr: a.sr, avgDurMs: parseDuration(a.avgDur), errors7d: a.errors7d };
+    ALERT_RULES.forEach(rule => {
+      const val = metrics[rule.metric];
+      if (val === undefined) return;
+      const triggered = rule.op === '<' ? val < rule.threshold : val > rule.threshold;
+      if (triggered) activeAlerts.push({ agent: a.id, color: a.color, sev: rule.sev, msg: a.id + ': ' + rule.msg });
+    });
+  });
+
+  // Show toasts for new alerts and badge the fleet nav button
+  const fleetBtn = document.querySelector('.nb[data-tab="fleet"]');
+  if (fleetBtn) fleetBtn.classList.toggle('has-alert', activeAlerts.some(al => al.sev === 'error'));
+
+  // Show one toast per error-level alert (warn-level is silent)
+  activeAlerts.filter(al => al.sev === 'error').slice(0, 2).forEach(al => {
+    showToast(al.agent, al.msg, '#EF4444');
+  });
+
+  return activeAlerts;
+}
+
+// Run alerts 3s after page load (after initDashboard has had time to resolve)
+setTimeout(evaluateAlerts, 3000);
+
+// ═══════════════════════════════════════════════════
+// PHASE 3a — TOKENS/COST KPI (6th card, requires Phase 1 deployed)
+// Currently renders static — live data activates when GS1 deployed
+// ═══════════════════════════════════════════════════
+const TOKEN_COST_PER_M = { 'claude-sonnet-4-6': 3.00, default: 3.00 };
+
+async function initCostKPI() {
+  const costData = await gs1Query('cost');
+  const tokensToday = costData?.tokensToday || 0;
+  const el = document.getElementById('kpi-tokens');
+  if (el && tokensToday > 0) {
+    countUp(el, tokensToday, 1000);
+    const costEl = document.getElementById('kpi-tokens-cost');
+    if (costEl) {
+      const usd = (tokensToday / 1000000 * TOKEN_COST_PER_M.default).toFixed(4);
+      costEl.textContent = '$' + usd + ' est.';
+    }
+  }
+}
+initCostKPI();
 </script>
 </body>
 </html>
