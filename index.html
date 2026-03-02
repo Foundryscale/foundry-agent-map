@@ -8,124 +8,178 @@
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@500;700;800&family=Share+Tech+Mono&display=swap" rel="stylesheet">
 <style>
 /* ═══════════════════════════════════════════════════════
-   GRID OPS CENTER · FoundryScale.AI
+   GRID OPS CENTER · FoundryScale.AI · v2.0
    Aesthetic: Military intelligence terminal
    Palette:   Amber-gold on deep navy
    ═══════════════════════════════════════════════════════ */
 :root{
-  --bg:#04070E;--surf:#090F1C;--pnl:#0E1828;--bdr:#162236;--bdr2:#243C5A;
+  --bg:#04070E;--surf:#090F1C;--pnl:#0D1623;--bdr:#162236;--bdr2:#243C5A;
   --gold:#E8A020;--gold2:#C07818;--blue:#3B82F6;--grn:#10B981;--red:#EF4444;
   --amb:#F59E0B;--pur:#8B5CF6;--txt:#C8D8E8;--muted:#4A6A8A;--dim:#1E3350;
   --display:'Syne',sans-serif;--mono:'Share Tech Mono',monospace;
 }
-*{box-sizing:border-box;margin:0;padding:0}html,body{height:100%;overflow:hidden}
-body{background:var(--bg);color:var(--txt);font-family:var(--mono);display:grid;grid-template-rows:52px 1fr;grid-template-columns:52px 1fr;}
-body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;background:repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,0,0,0.05) 3px,rgba(0,0,0,0.05) 4px);}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden}
+body{
+  background-color:var(--bg);
+  background-image:
+    radial-gradient(circle,rgba(26,45,70,0.55) 1px,transparent 1px),
+    radial-gradient(ellipse 70% 50% at 25% 55%,rgba(232,160,32,0.05) 0%,transparent 65%),
+    radial-gradient(ellipse 50% 60% at 80% 25%,rgba(59,130,246,0.04) 0%,transparent 60%);
+  background-size:28px 28px,100% 100%,100% 100%;
+  background-attachment:local,fixed,fixed;
+  animation:gridDrift 45s linear infinite;
+  color:var(--txt);font-family:var(--mono);
+  display:grid;grid-template-rows:52px 1fr;grid-template-columns:52px 1fr;
+}
+@keyframes gridDrift{0%{background-position:0 0,0 0,0 0}100%{background-position:28px 28px,0 0,0 0}}
+/* Scanline */
+body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,0.045) 2px,rgba(0,0,0,0.045) 3px);}
 
 /* TOP BAR */
-#topbar{grid-column:1/-1;background:var(--surf);border-bottom:1px solid var(--bdr);display:flex;align-items:center;padding:0 16px;gap:12px;z-index:100;}
+#topbar{grid-column:1/-1;background:var(--surf);border-bottom:1px solid var(--bdr);display:flex;align-items:center;padding:0 16px;gap:12px;z-index:100;position:relative;}
 .logo{display:flex;align-items:center;gap:8px;font-family:var(--display);font-weight:800;font-size:14px;letter-spacing:.18em;color:var(--gold);text-transform:uppercase;flex-shrink:0;}
-.logo-hex{width:24px;height:24px;background:var(--gold);flex-shrink:0;clip-path:polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%);position:relative;}
+.logo-hex{width:24px;height:24px;background:var(--gold);flex-shrink:0;clip-path:polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%);position:relative;box-shadow:0 0 14px rgba(232,160,32,0.35);}
 .logo-hex::after{content:'';position:absolute;inset:5px;background:var(--surf);clip-path:polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%);}
 .tsep{width:1px;height:28px;background:var(--bdr);flex-shrink:0;}
 .ttag{font-size:9px;letter-spacing:.2em;color:var(--muted);text-transform:uppercase;white-space:nowrap;}
-.tbtn{display:flex;align-items:center;gap:6px;padding:5px 12px;border:1px solid var(--bdr);border-radius:2px;font-family:var(--mono);font-size:10px;color:var(--muted);cursor:pointer;background:var(--bg);transition:all .15s;white-space:nowrap;}
-.tbtn:hover{border-color:var(--gold);color:var(--gold);}
-.tbtn.chat:hover{border-color:var(--pur);color:var(--pur);}
-.tbtn.chat.active{border-color:var(--pur);color:var(--pur);background:rgba(139,92,246,.08);}
+.tbtn{display:flex;align-items:center;gap:6px;padding:5px 12px;border:1px solid var(--bdr);border-radius:2px;font-family:var(--mono);font-size:10px;color:var(--muted);cursor:pointer;background:transparent;transition:all .15s;white-space:nowrap;}
+.tbtn:hover{border-color:var(--gold);color:var(--gold);background:rgba(232,160,32,.05);}
+.tbtn.chat:hover,.tbtn.chat.active{border-color:var(--pur);color:var(--pur);background:rgba(139,92,246,.08);}
 kbd{font-size:9px;padding:1px 4px;border:1px solid var(--bdr2);border-radius:2px;color:var(--dim);font-family:var(--mono);}
 .tright{margin-left:auto;display:flex;align-items:center;gap:8px;}
 .pill{display:flex;align-items:center;gap:5px;padding:3px 8px;border:1px solid var(--bdr);border-radius:2px;font-size:9px;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;}
 .pill.ok{border-color:rgba(16,185,129,.3);color:var(--grn);}
 .pill.warn{border-color:rgba(245,158,11,.3);color:var(--amb);}
 .dot{width:5px;height:5px;border-radius:50%;flex-shrink:0;}
-.dot.g{background:var(--grn);box-shadow:0 0 5px var(--grn);animation:pulse 2s infinite;}
+.dot.g{background:var(--grn);animation:dotPulse 2s ease-in-out infinite;}
 .dot.a{background:var(--amb);}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+@keyframes dotPulse{0%,100%{box-shadow:0 0 4px var(--grn);opacity:1}50%{box-shadow:0 0 10px var(--grn);opacity:.6}}
 #clock{font-size:11px;color:var(--muted);letter-spacing:.1em;min-width:84px;text-align:right;}
 
 /* NAV RAIL */
-#nav{background:var(--surf);border-right:1px solid var(--bdr);display:flex;flex-direction:column;align-items:center;padding:12px 0;gap:4px;}
+#nav{background:var(--surf);border-right:1px solid var(--bdr);display:flex;flex-direction:column;align-items:center;padding:12px 0;gap:4px;z-index:50;position:relative;}
 .nb{width:38px;height:38px;border-radius:3px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--dim);transition:all .15s;border:1px solid transparent;position:relative;}
 .nb:hover{color:var(--gold);background:rgba(232,160,32,.08);}
 .nb.active{color:var(--gold);background:rgba(232,160,32,.12);border-color:rgba(232,160,32,.3);}
+.nb.active::before{content:'';position:absolute;left:-1px;top:50%;transform:translateY(-50%);width:2px;height:18px;background:var(--gold);border-radius:0 1px 1px 0;box-shadow:0 0 6px var(--gold);}
 .nb svg{width:16px;height:16px;stroke-width:1.75;}
 .nbtip{position:absolute;left:calc(100% + 10px);white-space:nowrap;background:var(--pnl);border:1px solid var(--bdr2);padding:3px 8px;font-size:9px;color:var(--txt);pointer-events:none;opacity:0;transition:opacity .1s;z-index:200;letter-spacing:.1em;text-transform:uppercase;}
 .nb:hover .nbtip{opacity:1;}
 .nbdiv{width:20px;height:1px;background:var(--bdr);margin:4px 0;}
 
 /* MAIN */
-#main{overflow:hidden;position:relative;transition:margin-right .25s ease;}
-.tab{position:absolute;inset:0;display:none;overflow:hidden;}
-.tab.active{display:flex;}
+#main{overflow:hidden;position:relative;transition:margin-right .25s ease;z-index:10;}
+.tab{position:absolute;inset:0;overflow:hidden;display:flex;opacity:0;visibility:hidden;pointer-events:none;transform:translateY(5px);transition:opacity .18s ease,transform .18s ease,visibility .18s;}
+.tab.active{opacity:1;visibility:visible;pointer-events:all;transform:translateY(0);}
 
-/* PANELS */
+/* CORNER BRACKET PANELS */
 .pnl{background:var(--pnl);border:1px solid var(--bdr);position:relative;overflow:hidden;}
-.pnl::before,.pnl::after{content:'';position:absolute;width:7px;height:7px;border-color:var(--gold2);border-style:solid;opacity:.4;z-index:2;}
-.pnl::before{top:-1px;left:-1px;border-width:1px 0 0 1px;}
-.pnl::after{top:-1px;right:-1px;border-width:1px 1px 0 0;}
+.pnl::before,.pnl::after{content:'';position:absolute;width:11px;height:11px;border-color:var(--gold2);border-style:solid;opacity:.7;z-index:2;}
+.pnl::before{top:-1px;left:-1px;border-width:1.5px 0 0 1.5px;}
+.pnl::after{top:-1px;right:-1px;border-width:1.5px 1.5px 0 0;}
 .ph{padding:8px 12px;border-bottom:1px solid var(--bdr);display:flex;align-items:center;justify-content:space-between;font-size:9px;letter-spacing:.18em;color:var(--muted);text-transform:uppercase;flex-shrink:0;}
 .pt{font-family:var(--display);font-weight:700;font-size:10px;color:var(--gold);letter-spacing:.15em;}
 
 /* OVERVIEW */
-#overview{display:grid;grid-template-rows:76px 1fr 178px;grid-template-columns:1fr 285px;width:100%;height:100%;}
+#overview{display:grid;grid-template-rows:90px 1fr 130px 148px;grid-template-columns:1fr 285px;width:100%;height:100%;}
+
+/* KPI BAR */
 #kpi-bar{grid-column:1/-1;grid-row:1;display:flex;border-bottom:1px solid var(--bdr);}
-.kpi{flex:1;padding:14px 16px;border-right:1px solid var(--bdr);display:flex;flex-direction:column;justify-content:space-between;}
+.kpi{flex:1;padding:10px 16px 8px;border-right:1px solid var(--bdr);display:flex;flex-direction:column;overflow:hidden;position:relative;}
 .kpi:last-child{border-right:none;}
-.kv{font-family:var(--display);font-weight:800;font-size:28px;line-height:1;transition:color .3s;}
-.kv.g{color:var(--grn);}.kv.b{color:var(--blue);}.kv.a{color:var(--gold);}.kv.p{color:var(--pur);}
-.kl{font-size:8px;letter-spacing:.2em;color:var(--muted);text-transform:uppercase;}
-.kd{font-size:9px;color:var(--muted);}.kd.up{color:var(--grn);}.kd.dn{color:var(--red);}
+.kl{font-size:8px;letter-spacing:.2em;color:var(--muted);text-transform:uppercase;margin-bottom:3px;flex-shrink:0;}
+.kv{font-family:var(--display);font-weight:800;font-size:30px;line-height:1;color:var(--txt);letter-spacing:-.01em;flex-shrink:0;}
+.kv.g{color:var(--grn);text-shadow:0 0 20px rgba(16,185,129,0.25);}
+.kv.b{color:var(--blue);text-shadow:0 0 20px rgba(59,130,246,0.2);}
+.kv.a{color:var(--gold);text-shadow:0 0 20px rgba(232,160,32,0.25);}
+.kv.p{color:var(--pur);text-shadow:0 0 20px rgba(139,92,246,0.2);}
+.kd{font-size:9px;color:var(--muted);flex-shrink:0;}
+.kd.up{color:var(--grn);}
+.kd.dn{color:var(--red);}
+.kspk{flex:1;min-height:0;display:flex;align-items:flex-end;margin-top:2px;overflow:hidden;}
+.kspk svg{width:100%;display:block;}
+
+/* NETWORK */
 #net-wrap{grid-column:1;grid-row:2;border-right:1px solid var(--bdr);position:relative;overflow:hidden;}
 #net-canvas{width:100%;height:100%;}
 .netlbl{position:absolute;top:10px;left:12px;font-size:8px;letter-spacing:.2em;color:var(--gold);text-transform:uppercase;z-index:5;pointer-events:none;}
-#net-tip{position:absolute;background:var(--pnl);border:1px solid var(--bdr2);padding:8px 12px;font-size:10px;pointer-events:none;opacity:0;transition:opacity .15s;z-index:50;min-width:150px;box-shadow:0 8px 24px rgba(0,0,0,.5);}
+.netlbl::after{content:'▮';animation:blink 1s step-end infinite;}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
+#net-tip{position:absolute;background:var(--pnl);border:1px solid var(--bdr2);padding:8px 12px;font-size:10px;pointer-events:none;opacity:0;transition:opacity .15s;z-index:50;min-width:170px;box-shadow:0 8px 24px rgba(0,0,0,.65);}
 .nt-n{font-family:var(--display);font-weight:700;font-size:13px;color:var(--gold);margin-bottom:4px;}
-.nt-d{color:var(--muted);font-size:9px;line-height:1.8;white-space:pre-line;}
+.nt-d{color:var(--muted);font-size:9px;line-height:1.85;white-space:pre-line;}
+
+/* EXEC FEED */
 #exec-feed{grid-column:2;grid-row:2;display:flex;flex-direction:column;overflow:hidden;border-left:1px solid var(--bdr);}
 .fbody{overflow-y:auto;flex:1;}
-.fi{padding:7px 11px;border-bottom:1px solid var(--bdr);font-size:10px;display:flex;align-items:center;gap:7px;animation:slidein .25s ease;cursor:default;}
+.fi{padding:6px 10px;border-bottom:1px solid var(--bdr);font-size:10px;display:flex;align-items:center;gap:6px;animation:slidein .2s ease;cursor:default;}
 .fi:hover{background:rgba(232,160,32,.025);}
-@keyframes slidein{from{transform:translateX(10px);opacity:0}to{transform:translateX(0);opacity:1}}
+@keyframes slidein{from{transform:translateX(8px);opacity:0}to{transform:translateX(0);opacity:1}}
 .fatag{font-family:var(--display);font-weight:700;font-size:9px;width:26px;text-align:center;padding:1px 3px;border-radius:2px;flex-shrink:0;}
 .fd{flex:1;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .ft{color:var(--dim);font-size:9px;flex-shrink:0;}
-#bottom-row{grid-column:1/-1;grid-row:3;display:grid;grid-template-columns:1fr 1fr 256px;border-top:1px solid var(--bdr);}
-.brcol{overflow:hidden;display:flex;flex-direction:column;}.brcol+.brcol{border-left:1px solid var(--bdr);}
-.infi{display:flex;align-items:center;justify-content:space-between;padding:6px 12px;border-bottom:1px solid var(--bdr);font-size:10px;}
-.infs{font-size:9px;letter-spacing:.06em;}.infs.ok{color:var(--grn);}.infs.warn{color:var(--amb);}.infs.err{color:var(--red);}
-.qbody{padding:10px 12px;overflow-y:auto;flex:1;font-size:10px;line-height:1.8;color:var(--muted);}
-.spmi{padding:7px 12px;border-bottom:1px solid var(--bdr);font-size:10px;display:flex;align-items:center;gap:7px;cursor:pointer;transition:background .15s;}
-.spmi:hover{background:rgba(232,160,32,.03);}
+.fst{font-size:8px;padding:1px 4px;border-radius:2px;flex-shrink:0;}
+.fst.ok{background:rgba(16,185,129,.12);color:var(--grn);}
+.fst.err{background:rgba(239,68,68,.1);color:var(--red);}
+
+/* HEATMAP */
+#heatmap-wrap{grid-column:1/-1;grid-row:3;border-top:1px solid var(--bdr);display:flex;flex-direction:column;overflow:hidden;background:linear-gradient(180deg,var(--bg) 0%,var(--pnl) 100%);}
+.hm-header{display:flex;align-items:center;justify-content:space-between;padding:7px 12px 4px;flex-shrink:0;}
+.hm-title{font-family:var(--display);font-weight:700;font-size:9px;letter-spacing:.15em;color:var(--gold);text-transform:uppercase;}
+.hm-legend{display:flex;align-items:center;gap:5px;font-size:8px;color:var(--dim);}
+.hm-lswatch{width:10px;height:10px;border-radius:2px;}
+#heatmap{padding:0 12px 8px;flex:1;display:flex;flex-direction:column;gap:0;}
+.hm-row{display:flex;align-items:center;gap:3px;margin-bottom:2px;}
+.hm-agent-lbl{font-family:var(--display);font-weight:700;font-size:9px;width:28px;flex-shrink:0;letter-spacing:.04em;}
+.hm-day-lbl{flex:1;font-size:7px;color:var(--dim);text-align:center;letter-spacing:.06em;text-transform:uppercase;}
+.hm-cell{flex:1;height:10px;border-radius:2px;transition:transform .15s,opacity .15s;cursor:default;}
+.hm-cell:hover{transform:scaleY(1.5);}
+.hm-header-row{display:flex;align-items:center;gap:3px;margin-bottom:4px;}
+.hm-header-spacer{width:28px;flex-shrink:0;}
+
+/* BOTTOM ROW */
+#bottom-row{grid-column:1/-1;grid-row:4;display:grid;grid-template-columns:1fr 1fr 256px;border-top:1px solid var(--bdr);}
+.brcol{overflow:hidden;display:flex;flex-direction:column;}
+.brcol+.brcol{border-left:1px solid var(--bdr);}
+.infi{display:flex;align-items:center;justify-content:space-between;padding:5px 12px;border-bottom:1px solid var(--bdr);font-size:10px;}
+.infs{font-size:9px;letter-spacing:.06em;}
+.infs.ok{color:var(--grn);}
+.infs.warn{color:var(--amb);}
+.infs.err{color:var(--red);}
+.qbody{padding:8px 12px;overflow-y:auto;flex:1;font-size:10px;line-height:1.85;color:var(--muted);}
+.spmi{padding:6px 12px;border-bottom:1px solid var(--bdr);font-size:10px;display:flex;align-items:center;gap:7px;cursor:pointer;transition:all .12s;}
+.spmi:hover{background:rgba(232,160,32,.04);padding-left:15px;}
 .pdot{width:5px;height:5px;border-radius:50%;flex-shrink:0;}
 
 /* FLEET */
-#fleet{padding:14px;overflow-y:auto;display:grid;grid-template-columns:repeat(auto-fill,minmax(248px,1fr));gap:10px;align-content:start;width:100%;}
+#fleet{padding:14px;overflow-y:auto;display:grid;grid-template-columns:repeat(auto-fill,minmax(258px,1fr));gap:10px;align-content:start;width:100%;}
 .ac{background:var(--pnl);border:1px solid var(--bdr);padding:14px;cursor:pointer;transition:all .2s;position:relative;overflow:hidden;}
 .acbar{position:absolute;top:0;left:0;right:0;height:2px;opacity:0;transition:opacity .2s;}
-.ac:hover{border-color:var(--gold2);background:rgba(232,160,32,.03);transform:translateY(-1px);}
+.ac:hover{border-color:var(--gold2);background:rgba(232,160,32,.025);transform:translateY(-2px);box-shadow:0 12px 32px rgba(0,0,0,.5);}
 .ac:hover .acbar{opacity:1;}
-.ach{display:flex;align-items:center;gap:10px;margin-bottom:12px;}
-.aic{width:34px;height:34px;border-radius:3px;display:flex;align-items:center;justify-content:center;font-family:var(--display);font-weight:800;font-size:12px;flex-shrink:0;}
+.ach{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+.aic{width:36px;height:36px;border-radius:3px;display:flex;align-items:center;justify-content:center;font-family:var(--display);font-weight:800;font-size:12px;flex-shrink:0;}
 .an{font-family:var(--display);font-weight:700;font-size:14px;color:var(--txt);}
 .aid{font-size:9px;color:var(--dim);margin-top:2px;letter-spacing:.04em;}
 .abadge{margin-left:auto;font-size:8px;padding:2px 6px;border-radius:2px;text-transform:uppercase;letter-spacing:.1em;flex-shrink:0;}
 .abadge.active{background:rgba(16,185,129,.12);color:var(--grn);border:1px solid rgba(16,185,129,.25);}
 .abadge.idle{background:rgba(59,130,246,.1);color:var(--blue);border:1px solid rgba(59,130,246,.2);}
 .abadge.cron{background:rgba(245,158,11,.1);color:var(--amb);border:1px solid rgba(245,158,11,.2);}
-.amg{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:10px;}
+.amg{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:8px;}
 .amgv{font-family:var(--display);font-weight:700;font-size:16px;}
 .amgl{font-size:8px;color:var(--dim);text-transform:uppercase;letter-spacing:.1em;margin-top:2px;}
 .abar{height:2px;background:var(--bdr);border-radius:1px;overflow:hidden;}
 .afill{height:100%;border-radius:1px;transition:width 1.2s ease;}
-.atrig{margin-top:8px;font-size:9px;color:var(--dim);display:flex;align-items:center;gap:5px;}
+.atrig{margin-top:6px;font-size:9px;color:var(--dim);display:flex;align-items:center;gap:5px;}
+.aspk-wrap{margin-top:8px;padding-top:8px;border-top:1px solid var(--bdr);}
 
 /* SPRINT */
 #sprint{display:flex;gap:10px;overflow-x:auto;overflow-y:hidden;padding:14px;align-items:start;width:100%;}
-.scol{min-width:208px;flex-shrink:0;}
+.scol{min-width:210px;flex-shrink:0;}
 .sch{padding:7px 10px;background:var(--surf);border:1px solid var(--bdr);border-bottom:none;font-family:var(--display);font-weight:700;font-size:9px;letter-spacing:.18em;text-transform:uppercase;display:flex;align-items:center;justify-content:space-between;}
 .scc{width:16px;height:16px;border-radius:50%;background:var(--bdr);font-size:8px;display:flex;align-items:center;justify-content:center;color:var(--muted);}
-.stask{background:var(--pnl);border:1px solid var(--bdr);border-top:none;padding:9px 10px;cursor:pointer;transition:all .15s;font-size:10px;}
+.stask{background:var(--pnl);border:1px solid var(--bdr);border-top:none;padding:9px 10px;cursor:pointer;transition:all .12s;font-size:10px;}
 .stask:hover{background:rgba(232,160,32,.04);padding-left:13px;}
 .stt{color:var(--txt);margin-bottom:5px;line-height:1.4;}
 .stm{color:var(--dim);font-size:9px;display:flex;align-items:center;gap:6px;flex-wrap:wrap;}
@@ -136,15 +190,18 @@ kbd{font-size:9px;padding:1px 4px;border:1px solid var(--bdr2);border-radius:2px
 .lh,.lr{display:grid;grid-template-columns:148px 44px 80px 1fr 84px 62px;border-bottom:1px solid var(--bdr);font-size:10px;height:34px;align-items:center;}
 .lh>*,.lr>*{padding:0 10px;}
 .lh{background:var(--surf);border-bottom:2px solid var(--bdr2);position:sticky;top:0;z-index:10;font-size:8px;letter-spacing:.15em;color:var(--muted);text-transform:uppercase;}
-.lr:hover{background:rgba(232,160,32,.022);}
+.lr{cursor:default;}
+.lr:hover{background:rgba(232,160,32,.02);}
 .ls{font-size:9px;padding:2px 5px;border-radius:2px;text-align:center;display:inline-block;}
-.ls.ok{background:rgba(16,185,129,.12);color:var(--grn);}.ls.err{background:rgba(239,68,68,.12);color:var(--red);}
+.ls.ok{background:rgba(16,185,129,.12);color:var(--grn);}
+.ls.err{background:rgba(239,68,68,.12);color:var(--red);}
 
 /* CONFIG */
 #config{overflow-y:auto;padding:14px;width:100%;height:100%;display:flex;flex-direction:column;gap:10px;}
 .cfgs{background:var(--pnl);border:1px solid var(--bdr);}
 .cfgt{padding:9px 14px;border-bottom:1px solid var(--bdr);font-family:var(--display);font-weight:700;font-size:10px;letter-spacing:.15em;color:var(--gold);text-transform:uppercase;}
-.cfgr{display:flex;align-items:center;justify-content:space-between;padding:7px 14px;border-bottom:1px solid var(--bdr);font-size:10px;gap:8px;}
+.cfgr{display:flex;align-items:center;justify-content:space-between;padding:7px 14px;border-bottom:1px solid var(--bdr);font-size:10px;gap:8px;transition:background .12s;}
+.cfgr:hover{background:rgba(232,160,32,.02);}
 .cfgr:last-child{border-bottom:none;}
 .cfgk{color:var(--muted);text-transform:uppercase;font-size:8px;letter-spacing:.1em;flex-shrink:0;}
 .cfgv{color:var(--txt);font-size:9px;flex:1;text-align:right;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
@@ -153,9 +210,9 @@ kbd{font-size:9px;padding:1px 4px;border:1px solid var(--bdr2);border-radius:2px
 .cbdg.cloud{background:rgba(59,130,246,.1);color:var(--blue);border:1px solid rgba(59,130,246,.2);}
 
 /* COMMAND PALETTE */
-#cmdov{position:fixed;inset:0;background:rgba(4,7,14,.9);backdrop-filter:blur(6px);z-index:1000;display:none;align-items:flex-start;justify-content:center;padding-top:80px;}
+#cmdov{position:fixed;inset:0;background:rgba(4,7,14,.92);backdrop-filter:blur(8px);z-index:1000;display:none;align-items:flex-start;justify-content:center;padding-top:80px;}
 #cmdov.open{display:flex;}
-#cmdbox{width:520px;background:var(--pnl);border:1px solid var(--bdr2);box-shadow:0 24px 64px rgba(0,0,0,.7),0 0 0 1px rgba(232,160,32,.07);}
+#cmdbox{width:520px;background:var(--pnl);border:1px solid var(--bdr2);box-shadow:0 24px 64px rgba(0,0,0,.8),0 0 0 1px rgba(232,160,32,.06);}
 #cmdsearch{display:flex;align-items:center;gap:10px;padding:14px 16px;border-bottom:1px solid var(--bdr);}
 #cmdinput{flex:1;background:none;border:none;outline:none;color:var(--txt);font-family:var(--mono);font-size:13px;}
 #cmdinput::placeholder{color:var(--dim);}
@@ -166,11 +223,11 @@ kbd{font-size:9px;padding:1px 4px;border:1px solid var(--bdr2);border-radius:2px
 .cmdftr{padding:7px 16px;border-top:1px solid var(--bdr);font-size:9px;color:var(--dim);display:flex;gap:14px;}
 
 /* AGENT MODAL */
-#amod{position:fixed;inset:0;background:rgba(4,7,14,.9);backdrop-filter:blur(6px);z-index:900;display:none;align-items:center;justify-content:center;}
+#amod{position:fixed;inset:0;background:rgba(4,7,14,.92);backdrop-filter:blur(8px);z-index:900;display:none;align-items:center;justify-content:center;}
 #amod.open{display:flex;}
-.amc{width:520px;background:var(--pnl);border:1px solid var(--bdr2);box-shadow:0 24px 64px rgba(0,0,0,.7);max-height:82vh;overflow-y:auto;}
+.amc{width:540px;background:var(--pnl);border:1px solid var(--bdr2);box-shadow:0 24px 64px rgba(0,0,0,.8);max-height:82vh;overflow-y:auto;}
 .amhdr{padding:18px 20px;border-bottom:1px solid var(--bdr);display:flex;align-items:center;gap:14px;}
-.amico{width:44px;height:44px;border-radius:3px;display:flex;align-items:center;justify-content:center;font-family:var(--display);font-weight:800;font-size:15px;flex-shrink:0;}
+.amico{width:46px;height:46px;border-radius:3px;display:flex;align-items:center;justify-content:center;font-family:var(--display);font-weight:800;font-size:15px;flex-shrink:0;}
 .amcls{margin-left:auto;width:26px;height:26px;border:1px solid var(--bdr);border-radius:2px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--muted);transition:all .15s;font-size:14px;}
 .amcls:hover{color:var(--red);border-color:var(--red);}
 .ambd{padding:20px;}
@@ -178,28 +235,39 @@ kbd{font-size:9px;padding:1px 4px;border:1px solid var(--bdr2);border-radius:2px
 .amrow:last-child{border-bottom:none;}
 .amk{color:var(--muted);font-size:9px;text-transform:uppercase;letter-spacing:.1em;}
 .amv{color:var(--txt);}
-.amspk{display:flex;align-items:flex-end;gap:2px;height:22px;}
-.amspkb{width:6px;border-radius:1px;opacity:.75;}
+.am-chart-lbl{font-size:8px;color:var(--muted);letter-spacing:.15em;text-transform:uppercase;margin-bottom:8px;}
+
+/* TOAST STACK */
+#toast-stack{position:fixed;top:68px;right:16px;z-index:2000;display:flex;flex-direction:column;gap:6px;pointer-events:none;width:280px;}
+.toast{background:var(--pnl);border:1px solid var(--bdr2);padding:7px 11px;display:flex;align-items:center;gap:8px;font-size:10px;transform:translateX(110%);transition:transform .25s ease;box-shadow:0 4px 20px rgba(0,0,0,.6);pointer-events:all;}
+.toast.show{transform:translateX(0);}
+.toast-tag{font-family:var(--display);font-weight:700;font-size:9px;padding:1px 5px;border-radius:2px;flex-shrink:0;}
+.toast-msg{color:var(--muted);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.toast-x{color:var(--dim);cursor:pointer;font-size:11px;flex-shrink:0;line-height:1;padding:2px;}
+.toast-x:hover{color:var(--txt);}
 
 /* CHAT PANEL */
-#chat{position:fixed;top:52px;right:0;bottom:0;width:340px;background:var(--surf);border-left:1px solid var(--bdr);display:flex;flex-direction:column;z-index:800;transform:translateX(100%);transition:transform .25s ease;}
+#chat{position:fixed;top:52px;right:0;bottom:0;width:360px;background:var(--surf);border-left:1px solid var(--bdr);display:flex;flex-direction:column;z-index:800;transform:translateX(100%);transition:transform .25s ease;}
 #chat.open{transform:translateX(0);}
 .chdr{padding:10px 14px;border-bottom:1px solid var(--bdr);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
 .chtit{font-family:var(--display);font-weight:700;font-size:11px;letter-spacing:.15em;color:var(--pur);text-transform:uppercase;}
 .chsub{font-size:8px;color:var(--dim);margin-top:1px;letter-spacing:.06em;}
 .chcls{cursor:pointer;color:var(--muted);transition:color .15s;font-size:14px;width:24px;height:24px;display:flex;align-items:center;justify-content:center;}
 .chcls:hover{color:var(--red);}
-#chmsg{flex:1;overflow-y:auto;padding:12px;}
-.cmsg{margin-bottom:12px;display:flex;flex-direction:column;gap:3px;}
-.cmsg.user .cbub{background:rgba(59,130,246,.12);border:1px solid rgba(59,130,246,.2);align-self:flex-end;}
-.cmsg.assistant .cbub{background:rgba(139,92,246,.08);border:1px solid rgba(139,92,246,.2);align-self:flex-start;}
-.cbub{max-width:92%;padding:8px 11px;border-radius:2px;font-size:10px;line-height:1.7;color:var(--txt);}
+#chmsg{flex:1;overflow-y:auto;padding:12px;display:flex;flex-direction:column;}
+.cmsg{margin-bottom:10px;display:flex;flex-direction:column;gap:3px;animation:msgIn .2s ease;}
+@keyframes msgIn{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
+.cmsg.user .cbub{background:rgba(59,130,246,.1);border:1px solid rgba(59,130,246,.18);align-self:flex-end;}
+.cmsg.assistant .cbub{background:rgba(139,92,246,.07);border:1px solid rgba(139,92,246,.18);align-self:flex-start;}
+.cbub{max-width:92%;padding:8px 11px;border-radius:2px;font-size:10px;line-height:1.75;color:var(--txt);}
 .cmeta{font-size:8px;color:var(--dim);padding:0 2px;}
 .cmeta.user{align-self:flex-end;}
-.ctyp{display:flex;gap:3px;padding:8px 11px;background:rgba(139,92,246,.08);border:1px solid rgba(139,92,246,.2);align-self:flex-start;border-radius:2px;margin-bottom:12px;}
+.cmeta.assistant{align-self:flex-start;}
+.ctyp{display:flex;gap:3px;padding:8px 11px;background:rgba(139,92,246,.07);border:1px solid rgba(139,92,246,.18);align-self:flex-start;border-radius:2px;margin-bottom:10px;}
 .ctyp.hidden{display:none;}
 .ctd{width:5px;height:5px;border-radius:50%;background:var(--pur);animation:tpulse .9s ease-in-out infinite;}
-.ctd:nth-child(2){animation-delay:.15s;}.ctd:nth-child(3){animation-delay:.3s;}
+.ctd:nth-child(2){animation-delay:.15s;}
+.ctd:nth-child(3){animation-delay:.3s;}
 @keyframes tpulse{0%,80%,100%{opacity:.3;transform:scale(.8)}40%{opacity:1;transform:scale(1)}}
 .chinwrap{padding:10px;border-top:1px solid var(--bdr);flex-shrink:0;display:flex;flex-direction:column;gap:6px;}
 #chinput{width:100%;background:var(--pnl);border:1px solid var(--bdr);color:var(--txt);font-family:var(--mono);font-size:10px;padding:8px 10px;resize:none;outline:none;border-radius:2px;transition:border-color .15s;line-height:1.6;}
@@ -226,7 +294,7 @@ kbd{font-size:9px;padding:1px 4px;border:1px solid var(--bdr2);border-radius:2px
   <div class="logo"><div class="logo-hex"></div>GRID OPS</div>
   <div class="tsep"></div>
   <span class="ttag">FoundryScale.AI · v3.2</span>
-  <button class="tbtn" id="cmdbtn" onclick="openCmd()">
+  <button class="tbtn" onclick="openCmd()">
     <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
     Command Palette <kbd>⌘K</kbd>
   </button>
@@ -238,7 +306,7 @@ kbd{font-size:9px;padding:1px 4px;border:1px solid var(--bdr2);border-radius:2px
     <div class="pill ok"><div class="dot g"></div> N8N Cloud</div>
     <div class="pill ok"><div class="dot g"></div> Supabase</div>
     <div class="pill ok"><div class="dot g"></div> Slack</div>
-    <div class="pill"><div class="dot a"></div> 9 Active</div>
+    <div class="pill"><div class="dot a"></div> 9 Agents</div>
     <div id="clock"></div>
   </div>
 </header>
@@ -275,14 +343,39 @@ kbd{font-size:9px;padding:1px 4px;border:1px solid var(--bdr2);border-radius:2px
   <div id="tab-overview" class="tab active">
     <div id="overview">
       <div id="kpi-bar">
-        <div class="kpi"><div class="kl">Executions Today</div><div class="kv g" id="kpi-exec">247</div><div class="kd up">↑ 18% vs yesterday</div></div>
-        <div class="kpi"><div class="kl">Active Agents</div><div class="kv a">9</div><div class="kd">of 9 deployed</div></div>
-        <div class="kpi"><div class="kl">Success Rate</div><div class="kv b">96.3%</div><div class="kd up">↑ 1.2% 7-day avg</div></div>
-        <div class="kpi"><div class="kl">Queue Depth</div><div class="kv p">4</div><div class="kd">research pending</div></div>
-        <div class="kpi"><div class="kl">Slack Events</div><div class="kv" id="kpi-slack">83</div><div class="kd">routed by F4 today</div></div>
+        <div class="kpi">
+          <div class="kl">Executions Today</div>
+          <div class="kv g" id="kpi-exec">0</div>
+          <div class="kd up">↑ 18% vs yesterday</div>
+          <div class="kspk" id="kspk-exec"></div>
+        </div>
+        <div class="kpi">
+          <div class="kl">Active Agents</div>
+          <div class="kv a">9</div>
+          <div class="kd">of 9 deployed</div>
+          <div class="kspk" id="kspk-agents"></div>
+        </div>
+        <div class="kpi">
+          <div class="kl">Success Rate</div>
+          <div class="kv b" id="kpi-sr">96.3%</div>
+          <div class="kd up">↑ 1.2% 7-day avg</div>
+          <div class="kspk" id="kspk-sr"></div>
+        </div>
+        <div class="kpi">
+          <div class="kl">Queue Depth</div>
+          <div class="kv p">4</div>
+          <div class="kd">research pending</div>
+          <div class="kspk" id="kspk-queue"></div>
+        </div>
+        <div class="kpi">
+          <div class="kl">Slack Events</div>
+          <div class="kv" id="kpi-slack">0</div>
+          <div class="kd">routed by F4 today</div>
+          <div class="kspk" id="kspk-slack"></div>
+        </div>
       </div>
       <div id="net-wrap">
-        <div class="netlbl">AGENT TOPOLOGY · LIVE ▮</div>
+        <div class="netlbl">AGENT TOPOLOGY · LIVE </div>
         <canvas id="net-canvas"></canvas>
         <div id="net-tip"><div class="nt-n" id="nt-n"></div><div class="nt-d" id="nt-d"></div></div>
       </div>
@@ -290,9 +383,22 @@ kbd{font-size:9px;padding:1px 4px;border:1px solid var(--bdr2);border-radius:2px
         <div class="ph"><span class="pt">Live Executions</span><span style="font-size:9px;color:var(--grn)">● STREAMING</span></div>
         <div class="fbody" id="fbody"></div>
       </div>
+      <div id="heatmap-wrap">
+        <div class="hm-header">
+          <span class="hm-title">Execution Heatmap · 7-Day</span>
+          <div class="hm-legend">
+            <span>Low</span>
+            <div class="hm-lswatch" style="background:rgba(232,160,32,0.15)"></div>
+            <div class="hm-lswatch" style="background:rgba(232,160,32,0.45)"></div>
+            <div class="hm-lswatch" style="background:rgba(232,160,32,0.85)"></div>
+            <span>High</span>
+          </div>
+        </div>
+        <div id="heatmap"></div>
+      </div>
       <div id="bottom-row">
         <div class="brcol">
-          <div class="ph"><span class="pt">Qura Daily Intel</span><span style="font-size:9px;color:var(--blue)">2026-03-02 · 09:00 UTC</span></div>
+          <div class="ph"><span class="pt">Qura Daily Intel</span><span style="font-size:9px;color:var(--blue)">2026-03-02</span></div>
           <div class="qbody" id="qbody"></div>
         </div>
         <div class="brcol">
@@ -377,9 +483,12 @@ kbd{font-size:9px;padding:1px 4px;border:1px solid var(--bdr2);border-radius:2px
   </div>
 </div>
 
+<!-- TOAST CONTAINER -->
+<div id="toast-stack"></div>
+
 <script>
 // ═══════════════════════════════════════════════════
-// DOM HELPER — avoids innerHTML for dynamic content
+// DOM HELPERS
 // ═══════════════════════════════════════════════════
 function mk(tag, props, ...children) {
   const e = document.createElement(tag);
@@ -389,6 +498,7 @@ function mk(tag, props, ...children) {
     if (props.text !== undefined) e.textContent = props.text;
     if (props.click) e.addEventListener('click', props.click);
     if (props.id) e.id = props.id;
+    if (props.title) e.title = props.title;
   }
   children.forEach(c => {
     if (c === null || c === undefined) return;
@@ -396,8 +506,38 @@ function mk(tag, props, ...children) {
   });
   return e;
 }
-
 function clr(el) { while (el.firstChild) el.removeChild(el.firstChild); }
+
+// SVG helper (createElementNS wrapper)
+const SVG_NS = 'http://www.w3.org/2000/svg';
+function svgEl(tag, attrs) {
+  const e = document.createElementNS(SVG_NS, tag);
+  if (attrs) Object.entries(attrs).forEach(([k, v]) => e.setAttribute(k, v));
+  return e;
+}
+
+// SVG sparkline (area + line + end dot)
+function makeSvgSparkline(data, color, w, h) {
+  w = w || 80; h = h || 22;
+  const svg = svgEl('svg', {width: w, height: h, viewBox: `0 0 ${w} ${h}`, preserveAspectRatio: 'none'});
+  const max = Math.max(...data, 1), min = Math.min(...data);
+  const range = max - min || 1;
+  const step = w / Math.max(data.length - 1, 1);
+  const pts = data.map((v, i) => [i * step, h - 2 - ((v - min) / range) * (h - 4)]);
+  const pStr = pts.map(([x, y]) => `${x},${y}`).join(' ');
+  // Area fill
+  const areaD = `M0,${h} ${pts.map(([x, y]) => `L${x},${y}`).join(' ')} L${w},${h} Z`;
+  const area = svgEl('path', {d: areaD, fill: color + '20', stroke: 'none'});
+  svg.appendChild(area);
+  // Line
+  const poly = svgEl('polyline', {points: pStr, fill: 'none', stroke: color, 'stroke-width': '1.5', 'stroke-linejoin': 'round', 'stroke-linecap': 'round'});
+  svg.appendChild(poly);
+  // End dot
+  const last = pts[pts.length - 1];
+  const dot = svgEl('circle', {cx: last[0], cy: last[1], r: '2.5', fill: color});
+  svg.appendChild(dot);
+  return svg;
+}
 
 // ═══════════════════════════════════════════════════
 // DATA
@@ -414,6 +554,14 @@ const AGENTS = [
   { id:'A1', name:'Agent Info', wfId:'unPP1nu37UyDKiqf', type:'Tool', trigger:'/agent-info slash', status:'active', sr:98.5, execs:6, lastRun:'3h ago', color:'#3B82F6', next:'On demand', runs7d:42, avgDur:'280ms', errors7d:1, spark:[5,8,6,7,9,6,6], desc:'Reads grid-agent-database.json sidecar. Returns structured agent metadata via Slack /agent-info, routed by F4.' },
 ];
 
+const KPI_SPARKS = {
+  exec:  [198, 215, 234, 221, 238, 229, 247],
+  agents:[9, 9, 9, 9, 9, 9, 9],
+  sr:    [94.1, 95.8, 96.2, 95.5, 96.8, 97.1, 96.3],
+  queue: [2, 5, 3, 7, 4, 6, 4],
+  slack: [71, 78, 83, 76, 88, 79, 83],
+};
+
 const SPRINT_TASKS = [
   {col:'in_progress', title:'J2 Job Doc Generator', tags:['N8N','Claude'], id:'86b8q2y77'},
   {col:'in_progress', title:'AssistantBridge Watch final test', tags:['Android'], id:'86b8x1a23'},
@@ -428,18 +576,18 @@ const SPRINT_TASKS = [
 ];
 
 const EXEC_EVENTS = [
-  {agent:'F4',color:'#E8A020',desc:'/email → G1-Chat routed'},
-  {agent:'G1',color:'#3B82F6',desc:'Email generated for Datadog prospect'},
-  {agent:'X1',color:'#F59E0B',desc:'G1 exec logged to Supabase'},
-  {agent:'QR',color:'#8B5CF6',desc:'@Qura answered question in #qura'},
-  {agent:'F4',color:'#E8A020',desc:'/research → R2 dispatched'},
-  {agent:'R2',color:'#10B981',desc:'YouTube transcript: Anthropic pricing'},
-  {agent:'X1',color:'#F59E0B',desc:'R2 exec logged · 47s duration'},
-  {agent:'FA',color:'#EF4444',desc:'Feedback thread processed in #prospectemail'},
-  {agent:'F4',color:'#E8A020',desc:'/agent-info → A1 response'},
-  {agent:'A1',color:'#3B82F6',desc:'Agent metadata returned for R2'},
-  {agent:'QR',color:'#8B5CF6',desc:'Daily Oracle posted to #qura'},
-  {agent:'R2',color:'#10B981',desc:'Research queued: Anthropic 2026 pricing'},
+  {agent:'F4',color:'#E8A020',desc:'/email → G1-Chat routed',dur:'280ms',ok:true},
+  {agent:'G1',color:'#3B82F6',desc:'Email generated for Datadog prospect',dur:'31s',ok:true},
+  {agent:'X1',color:'#F59E0B',desc:'G1 exec logged to Supabase',dur:'150ms',ok:true},
+  {agent:'QR',color:'#8B5CF6',desc:'@Qura answered question in #qura',dur:'58s',ok:true},
+  {agent:'F4',color:'#E8A020',desc:'/research → R2 dispatched',dur:'310ms',ok:true},
+  {agent:'R2',color:'#10B981',desc:'YouTube transcript: Anthropic pricing',dur:'44s',ok:true},
+  {agent:'X1',color:'#F59E0B',desc:'R2 exec logged · 47s duration',dur:'142ms',ok:true},
+  {agent:'FA',color:'#EF4444',desc:'Feedback thread processed in #prospectemail',dur:'51s',ok:true},
+  {agent:'F4',color:'#E8A020',desc:'/agent-info → A1 response',dur:'292ms',ok:true},
+  {agent:'A1',color:'#3B82F6',desc:'Agent metadata returned for R2',dur:'260ms',ok:true},
+  {agent:'QR',color:'#8B5CF6',desc:'Daily Oracle posted to #qura',dur:'67s',ok:true},
+  {agent:'R2',color:'#10B981',desc:'Research queued: Anthropic 2026 pricing',dur:'41s',ok:false},
 ];
 
 const INFRA = [
@@ -518,20 +666,61 @@ function setTab(name) {
 }
 
 // ═══════════════════════════════════════════════════
-// QURA INTEL (static text, built with DOM)
+// KPI COUNT-UP ANIMATION
+// ═══════════════════════════════════════════════════
+function countUp(el, target, duration) {
+  duration = duration || 1400;
+  const start = performance.now();
+  function step(now) {
+    const t = Math.min((now - start) / duration, 1);
+    const eased = 1 - Math.pow(1 - t, 3);
+    el.textContent = Math.round(target * eased);
+    if (t < 1) requestAnimationFrame(step);
+    else el.textContent = target;
+  }
+  requestAnimationFrame(step);
+}
+
+// ═══════════════════════════════════════════════════
+// KPI SPARKLINES + COUNT-UP
+// ═══════════════════════════════════════════════════
+(function initKPIs() {
+  const execEl = document.getElementById('kpi-exec');
+  const slackEl = document.getElementById('kpi-slack');
+  if (execEl) countUp(execEl, 247, 1400);
+  if (slackEl) countUp(slackEl, 83, 1200);
+
+  const configs = [
+    {id:'kspk-exec',  data:KPI_SPARKS.exec,   color:'#10B981'},
+    {id:'kspk-agents',data:KPI_SPARKS.agents,  color:'#E8A020'},
+    {id:'kspk-sr',    data:KPI_SPARKS.sr,      color:'#3B82F6'},
+    {id:'kspk-queue', data:KPI_SPARKS.queue,   color:'#8B5CF6'},
+    {id:'kspk-slack', data:KPI_SPARKS.slack,   color:'#C8D8E8'},
+  ];
+  configs.forEach(cfg => {
+    const el = document.getElementById(cfg.id);
+    if (!el) return;
+    const svg = makeSvgSparkline(cfg.data, cfg.color);
+    svg.style.width = '100%';
+    svg.style.height = '100%';
+    el.appendChild(svg);
+  });
+})();
+
+// ═══════════════════════════════════════════════════
+// QURA INTEL
 // ═══════════════════════════════════════════════════
 (function() {
   const el = document.getElementById('qbody');
-  const paras = [
-    [['Market Signal: ', true], 'Outbound personalization tools seeing 3× engagement lift in SMB segments. Competitors converging on generic GPT copy — gap widens for human-voice differentiation.'],
-    [['System Health: ', true], 'G1 email workflows running at 96% success. FA1 logged 3 messaging improvements overnight. R2 queue cleared 7 items.'],
-    [['Today\'s Focus: ', true], 'SP1 selected 6 sprint tasks. J2 Job Doc Generator leads Build Pipeline. AssistantBridge Watch trigger needs final test.'],
+  const items = [
+    ['Market Signal: ', 'Outbound personalization tools seeing 3× engagement lift in SMB segments. Competitors converging on generic GPT copy — gap widens for human-voice differentiation.'],
+    ['System Health: ', 'G1 email workflows running at 96% success. FA1 logged 3 messaging improvements overnight. R2 queue cleared 7 items.'],
+    ['Today\'s Focus: ', 'SP1 selected 6 sprint tasks. J2 Job Doc Generator leads Build Pipeline. AssistantBridge Watch trigger needs final test.'],
   ];
-  paras.forEach(([header, body], i) => {
+  items.forEach(([hdr, body], i) => {
     if (i > 0) el.appendChild(mk('br'));
-    const p = mk('p', {style:'margin:4px 0'});
-    const s = mk('strong', {style:'color:var(--gold)'}, header[0]);
-    p.appendChild(s);
+    const p = mk('p', {style:'margin:3px 0'});
+    p.appendChild(mk('strong', {style:'color:var(--gold)', text: hdr}));
     p.appendChild(document.createTextNode(body));
     el.appendChild(p);
   });
@@ -544,16 +733,37 @@ function setTab(name) {
   const el = document.getElementById('infra');
   INFRA.forEach(i => {
     const row = mk('div', {cls:'infi'});
-    row.appendChild(mk('span', {style:'font-size:9px;color:var(--muted)', text: i.name}));
+    row.appendChild(mk('span', {text: i.name, style:'font-size:9px;color:var(--muted)'}));
     row.appendChild(mk('span', {cls:'infs ' + i.cls, text:'● ' + i.status}));
     el.appendChild(row);
   });
 })();
 
 // ═══════════════════════════════════════════════════
+// TOAST SYSTEM
+// ═══════════════════════════════════════════════════
+function showToast(agent, message, color) {
+  const stack = document.getElementById('toast-stack');
+  const toast = mk('div', {cls:'toast'});
+  const tag = mk('span', {cls:'toast-tag', text: agent, style:`background:${color}22;color:${color};border:1px solid ${color}44`});
+  const msg = mk('span', {cls:'toast-msg', text: message});
+  const x = mk('span', {cls:'toast-x', text:'✕', click:() => {
+    toast.classList.remove('show');
+    setTimeout(() => { if (toast.parentNode) toast.parentNode.removeChild(toast); }, 300);
+  }});
+  toast.append(tag, msg, x);
+  stack.appendChild(toast);
+  requestAnimationFrame(() => requestAnimationFrame(() => toast.classList.add('show')));
+  setTimeout(() => {
+    toast.classList.remove('show');
+    setTimeout(() => { if (toast.parentNode) toast.parentNode.removeChild(toast); }, 300);
+  }, 4000);
+}
+
+// ═══════════════════════════════════════════════════
 // EXEC FEED
 // ═══════════════════════════════════════════════════
-let feedIdx = 0;
+let feedIdx = 0, toastCounter = 0;
 function addFeedItem() {
   const e = EXEC_EVENTS[feedIdx % EXEC_EVENTS.length]; feedIdx++;
   const fbody = document.getElementById('fbody');
@@ -562,13 +772,59 @@ function addFeedItem() {
   const tag = mk('span', {cls:'fatag', text: e.agent, style:`background:${e.color}22;color:${e.color}`});
   const dot = mk('div', {cls:'dot g'});
   const desc = mk('span', {cls:'fd', text: e.desc});
+  const dur = mk('span', {cls:'ft', text: e.dur, style:'margin-right:4px'});
+  const st = mk('span', {cls:'fst ' + (e.ok ? 'ok' : 'err'), text: e.ok ? 'OK' : 'ERR'});
   const time = mk('span', {cls:'ft', text: mins === 0 ? 'now' : `${mins}m`});
-  row.append(tag, dot, desc, time);
+  row.append(tag, dot, desc, dur, st, time);
   fbody.insertBefore(row, fbody.firstChild);
   while (fbody.children.length > 22) fbody.removeChild(fbody.lastChild);
+
+  // Toast every ~4 items
+  toastCounter++;
+  if (toastCounter % 4 === 0) showToast(e.agent, e.desc, e.color);
 }
-for (let i = 0; i < 12; i++) addFeedItem();
+for (let i = 0; i < 14; i++) addFeedItem();
 setInterval(addFeedItem, 3200);
+
+// ═══════════════════════════════════════════════════
+// ACTIVITY HEATMAP
+// ═══════════════════════════════════════════════════
+(function renderHeatmap() {
+  const el = document.getElementById('heatmap');
+  const days = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+
+  // Header row
+  const hdrRow = mk('div', {cls:'hm-header-row'});
+  hdrRow.appendChild(mk('div', {cls:'hm-header-spacer'}));
+  days.forEach(d => hdrRow.appendChild(mk('div', {cls:'hm-day-lbl', text: d})));
+  el.appendChild(hdrRow);
+
+  // Agent rows with synthetic data
+  AGENTS.forEach(a => {
+    const base = a.runs7d / 7;
+    const dayCounts = days.map((_, i) => {
+      if (a.trigger.includes('Cron Mon')) return (i === 0) ? Math.round(a.runs7d * 0.9 + 1) : 0;
+      if (a.trigger.includes('Cron')) return Math.round(Math.random() * 2);
+      return Math.max(0, Math.round(base * (0.3 + Math.random() * 1.4)));
+    });
+    const maxCount = Math.max(...dayCounts, 1);
+
+    const row = mk('div', {cls:'hm-row'});
+    const lbl = mk('div', {cls:'hm-agent-lbl', text: a.id, style:`color:${a.color}`});
+    row.appendChild(lbl);
+
+    dayCounts.forEach(count => {
+      const alpha = count === 0 ? 0.08 : (0.15 + (count / maxCount) * 0.8);
+      const cell = mk('div', {
+        cls:'hm-cell',
+        style:`background:${a.color};opacity:${alpha.toFixed(2)}`,
+        title:`${a.id} · ${count} exec${count !== 1 ? 's' : ''}`
+      });
+      row.appendChild(cell);
+    });
+    el.appendChild(row);
+  });
+})();
 
 // ═══════════════════════════════════════════════════
 // SPRINT MINI
@@ -576,11 +832,11 @@ setInterval(addFeedItem, 3200);
 const PCOLORS = ['#EF4444','#F59E0B','#10B981'];
 (function() {
   const el = document.getElementById('sprintmini');
-  SPRINT_TASKS.filter(t => t.col !== 'done').forEach((t, i) => {
+  SPRINT_TASKS.filter(t => t.col !== 'done').slice(0, 6).forEach((t, i) => {
     const row = mk('div', {cls:'spmi', click:() => setTab('sprint')});
     const dot = mk('div', {cls:'pdot', style:`background:${PCOLORS[i % 3]}`});
     const title = mk('span', {text: t.title, style:'flex:1;font-size:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis'});
-    const status = mk('span', {text: t.col.replace('_', ' '), style:'font-size:9px;color:var(--dim);text-transform:uppercase;letter-spacing:.08em'});
+    const status = mk('span', {text: t.col.replace('_',' '), style:'font-size:9px;color:var(--dim);text-transform:uppercase;letter-spacing:.08em;flex-shrink:0'});
     row.append(dot, title, status);
     el.appendChild(row);
   });
@@ -597,36 +853,40 @@ function renderFleet() {
     const card = mk('div', {cls:'ac', click:() => openModal(a)});
 
     const topbar2 = mk('div', {cls:'acbar', style:`background:linear-gradient(90deg,${a.color},transparent)`});
-    card.onmouseenter = () => topbar2.style.opacity = '1';
-    card.onmouseleave = () => topbar2.style.opacity = '0';
 
     // Header
     const hdr = mk('div', {cls:'ach'});
     const ico = mk('div', {cls:'aic', text: a.id, style:`background:${a.color}18;border:1px solid ${a.color}40;color:${a.color}`});
     const nameWrap = mk('div');
     nameWrap.appendChild(mk('div', {cls:'an', text: a.name}));
-    nameWrap.appendChild(mk('div', {cls:'aid', text: a.wfId.split('/')[0].trim()}));
+    nameWrap.appendChild(mk('div', {cls:'aid', text: a.wfId}));
     const badge = mk('div', {cls:`abadge ${a.status}`, text: a.status});
     hdr.append(ico, nameWrap, badge);
 
-    // Metrics
+    // Metrics grid
     const mg = mk('div', {cls:'amg'});
     [[a.sr + '%','Success',a.color],[String(a.execs),'Today',null],[a.lastRun,'Last Run',null]].forEach(([v,l,c]) => {
-      const m = mk('div', {cls:'metric'});
+      const m = mk('div');
       m.appendChild(mk('div', {cls:'amgv', text: v, style: c ? `color:${c}` : `color:var(--txt);font-size:11px`}));
       m.appendChild(mk('div', {cls:'amgl', text: l}));
       mg.appendChild(m);
     });
 
-    // Bar
+    // Success bar
     const bar = mk('div', {cls:'abar'});
     bar.appendChild(mk('div', {cls:'afill', style:`width:${a.sr}%;background:${a.color}`}));
 
     // Trigger
-    const trig = mk('div', {cls:'atrig'});
-    trig.appendChild(mk('span', {text: '▶ ' + a.trigger + ' · cloud'}));
+    const trig = mk('div', {cls:'atrig'}, '▶ ' + a.trigger + ' · cloud');
 
-    card.append(topbar2, hdr, mg, bar, trig);
+    // Sparkline
+    const spkWrap = mk('div', {cls:'aspk-wrap'});
+    const spkSvg = makeSvgSparkline(a.spark, a.color, 0, 28);
+    spkSvg.style.width = '100%';
+    spkSvg.style.display = 'block';
+    spkWrap.appendChild(spkSvg);
+
+    card.append(topbar2, hdr, mg, bar, trig, spkWrap);
     el.appendChild(card);
   });
 }
@@ -635,10 +895,10 @@ function renderFleet() {
 // SPRINT KANBAN
 // ═══════════════════════════════════════════════════
 const SCOLS = [
-  {id:'open',label:'Open',color:'#4A6A8A'},
-  {id:'in_progress',label:'In Progress',color:'#3B82F6'},
-  {id:'review',label:'Review',color:'#F59E0B'},
-  {id:'done',label:'Done',color:'#10B981'},
+  {id:'open',       label:'Open',        color:'#4A6A8A'},
+  {id:'in_progress',label:'In Progress', color:'#3B82F6'},
+  {id:'review',     label:'Review',      color:'#F59E0B'},
+  {id:'done',       label:'Done',        color:'#10B981'},
 ];
 let sprintDone = false;
 function renderSprint() {
@@ -676,18 +936,18 @@ function renderLogs() {
     const mins = i * 3 + Math.floor(Math.random() * 2);
     const d = new Date(Date.now() - mins * 60000);
     const ts = `${String(d.getUTCHours()).padStart(2,'0')}:${String(d.getUTCMinutes()).padStart(2,'0')}:${String(d.getUTCSeconds()).padStart(2,'0')}`;
-    const dur = (e.agent === 'X1' || e.agent === 'A1') ? `${100 + Math.floor(Math.random() * 200)}ms` : `${Math.floor(Math.random() * 60) + 5}s`;
     const ok = Math.random() > 0.05;
     const row = mk('div', {cls:'lr'});
-    const c1 = mk('div', {text:`2026-03-02 ${ts}`, style:'color:var(--muted);font-size:9px'});
+    row.appendChild(mk('div', {text:`2026-03-02 ${ts}`, style:'color:var(--muted);font-size:9px'}));
     const c2 = mk('div');
     c2.appendChild(mk('span', {cls:'fatag', text: e.agent, style:`background:${e.color}22;color:${e.color}`}));
+    row.appendChild(c2);
     const c3 = mk('div');
     c3.appendChild(mk('span', {cls:'ls ' + (ok ? 'ok' : 'err'), text: ok ? 'OK' : 'ERROR'}));
-    const c4 = mk('div', {text: e.desc, style:'color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis'});
-    const c5 = mk('div', {text: dur, style:'color:var(--dim)'});
-    const c6 = mk('div', {text:(e.agent === 'X1' || e.agent === 'A1') ? 'sub-wf' : 'webhook', style:'color:var(--dim);font-size:9px'});
-    row.append(c1, c2, c3, c4, c5, c6);
+    row.appendChild(c3);
+    row.appendChild(mk('div', {text: e.desc, style:'color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis'}));
+    row.appendChild(mk('div', {text: e.dur, style:'color:var(--dim)'}));
+    row.appendChild(mk('div', {text:(e.agent === 'X1' || e.agent === 'A1') ? 'sub-wf' : 'webhook', style:'color:var(--dim);font-size:9px'}));
     el.appendChild(row);
   }
 }
@@ -729,7 +989,7 @@ setInterval(() => {
 function openModal(a) {
   const ico = document.getElementById('amico');
   ico.textContent = a.id;
-  ico.style.cssText = `background:${a.color}18;border:1px solid ${a.color}40;color:${a.color};width:44px;height:44px;border-radius:3px;display:flex;align-items:center;justify-content:center;font-family:var(--display);font-weight:800;font-size:15px;flex-shrink:0;`;
+  ico.style.cssText = `background:${a.color}18;border:1px solid ${a.color}40;color:${a.color};width:46px;height:46px;border-radius:3px;display:flex;align-items:center;justify-content:center;font-family:var(--display);font-weight:800;font-size:15px;flex-shrink:0;box-shadow:0 0 16px ${a.color}33;`;
   document.getElementById('amname').textContent = a.name;
   document.getElementById('amid').textContent = a.wfId;
 
@@ -748,7 +1008,6 @@ function openModal(a) {
     {k:'Last Run', v:a.lastRun},
     {k:'Next Run', v:a.next},
   ];
-
   rows.forEach(r => {
     const row = mk('div', {cls:'amrow'});
     row.appendChild(mk('span', {cls:'amk', text: r.k}));
@@ -757,22 +1016,21 @@ function openModal(a) {
     body.appendChild(row);
   });
 
-  // Spark row
-  const sparkRow = mk('div', {cls:'amrow'});
-  sparkRow.appendChild(mk('span', {cls:'amk', text: '7-Day Trend'}));
-  const sparkEl = mk('div', {cls:'amspk'});
-  const mx = Math.max(...a.spark);
-  a.spark.forEach(v => sparkEl.appendChild(mk('div', {cls:'amspkb', style:`height:${Math.round((v/mx)*20)}px;background:${a.color}`})));
-  sparkRow.appendChild(sparkEl);
-  body.appendChild(sparkRow);
+  // Sparkline chart
+  const chartSection = mk('div', {style:'margin-top:16px;padding-top:16px;border-top:1px solid var(--bdr)'});
+  chartSection.appendChild(mk('div', {cls:'am-chart-lbl', text:'7-Day Execution Trend'}));
+  const spkSvg = makeSvgSparkline(a.spark, a.color, 480, 48);
+  spkSvg.style.width = '100%';
+  spkSvg.style.height = '48px';
+  chartSection.appendChild(spkSvg);
+  body.appendChild(chartSection);
 
   // Description
-  body.appendChild(mk('div', {text: a.desc, style:'margin-top:14px;padding-top:14px;border-top:1px solid var(--bdr);font-size:10px;color:var(--muted);line-height:1.7'}));
+  body.appendChild(mk('div', {text: a.desc, style:'margin-top:14px;padding-top:14px;border-top:1px solid var(--bdr);font-size:10px;color:var(--muted);line-height:1.75'}));
 
   document.getElementById('amod').classList.add('open');
   closeCmd();
 }
-
 function closeModal() { document.getElementById('amod').classList.remove('open'); }
 
 // ═══════════════════════════════════════════════════
@@ -787,7 +1045,6 @@ const CMD_ACTIONS = [
   {icon:'⚙', label:'Go to Config', col:'#E8A020', action:() => setTab('config')},
   {icon:'💬', label:'Open GRID Chat', col:'#8B5CF6', action:() => toggleChat(true)},
 ];
-
 let cmdSel = 0, cmdFiltered = [];
 
 function openCmd() {
@@ -811,8 +1068,7 @@ function buildCmdResults(q) {
   cmdFiltered.forEach((r, i) => {
     const d = mk('div', {cls:'cmdr' + (i === 0 ? ' sel' : ''), click:() => {r.action(); closeCmd();}});
     const ico = mk('div', {cls:'cmdri', text: r.icon, style:`color:${r.col || 'var(--gold)'}`});
-    const lbl = mk('span', {text: r.label});
-    d.append(ico, lbl);
+    d.append(ico, mk('span', {text: r.label}));
     el.appendChild(d);
   });
 }
@@ -837,37 +1093,27 @@ document.addEventListener('keydown', e => {
 // ═══════════════════════════════════════════════════
 const CHAT_URL = 'https://cprojects1.app.n8n.cloud/webhook/grid-chat';
 const CHAT_TOKEN = 'grid_fndry_7kX9mP2qR4wL';
-let chatHistory = [];
-let chatIsOpen = false;
+let chatHistory = [], chatIsOpen = false;
 
-// Initial welcome message
 (function() {
-  const msgs = document.getElementById('chmsg');
   addChatMsg('assistant', 'Hello. I\'m the GRID Agent — your AI command assistant for the FoundryScale Agent Engine.\n\nAsk me about agent status, sprint tasks, pipeline blockers, or anything about THE GRID.');
 })();
 
 function toggleChat(force) {
   chatIsOpen = force !== undefined ? force : !chatIsOpen;
-  const panel = document.getElementById('chat');
-  const btn = document.getElementById('chatbtn');
-  panel.classList.toggle('open', chatIsOpen);
-  btn.classList.toggle('active', chatIsOpen);
-  if (chatIsOpen) {
-    updateCtx();
-    document.getElementById('chinput').focus();
-  }
-  document.getElementById('main').style.marginRight = chatIsOpen ? '340px' : '0';
+  document.getElementById('chat').classList.toggle('open', chatIsOpen);
+  document.getElementById('chatbtn').classList.toggle('active', chatIsOpen);
+  if (chatIsOpen) { updateCtx(); document.getElementById('chinput').focus(); }
+  document.getElementById('main').style.marginRight = chatIsOpen ? '360px' : '0';
 }
 
 function updateCtx() {
-  const ctx = document.getElementById('chctx');
   const execs = document.getElementById('kpi-exec');
   const slack = document.getElementById('kpi-slack');
   const inProgress = SPRINT_TASKS.filter(t => t.col === 'in_progress').length;
-  ctx.textContent = `Context: ${execs ? execs.textContent : '?'} execs · ${slack ? slack.textContent : '?'} Slack events · ${inProgress} sprint tasks in progress`;
+  document.getElementById('chctx').textContent = `Context: ${execs ? execs.textContent : '?'} execs · ${slack ? slack.textContent : '?'} Slack events · ${inProgress} in sprint`;
 }
 
-// Safe markdown: bold (**text**) and lists (- item)
 function renderMarkdown(text, container) {
   clr(container);
   const lines = text.split('\n');
@@ -893,7 +1139,7 @@ function renderMarkdown(text, container) {
 function renderInline(text, el) {
   text.split(/(\*\*[^*]+\*\*)/).forEach(part => {
     if (part.startsWith('**') && part.endsWith('**')) {
-      el.appendChild(mk('strong', {text: part.slice(2, -2), style:'color:var(--gold)'}));
+      el.appendChild(mk('strong', {text: part.slice(2,-2), style:'color:var(--gold)'}));
     } else {
       el.appendChild(document.createTextNode(part));
     }
@@ -904,11 +1150,8 @@ function addChatMsg(role, content) {
   const msgs = document.getElementById('chmsg');
   const wrap = mk('div', {cls:'cmsg ' + role});
   const bubble = mk('div', {cls:'cbub'});
-  if (role === 'user') {
-    bubble.textContent = content;
-  } else {
-    renderMarkdown(content, bubble);
-  }
+  if (role === 'user') bubble.textContent = content;
+  else renderMarkdown(content, bubble);
   const now = new Date();
   const meta = mk('div', {cls:'cmeta ' + role, text:`${role === 'user' ? 'You' : 'GRID Agent'} · ${String(now.getUTCHours()).padStart(2,'0')}:${String(now.getUTCMinutes()).padStart(2,'0')}`});
   wrap.append(bubble, meta);
@@ -922,54 +1165,35 @@ async function sendChat() {
   if (!msg) return;
   const btn = document.getElementById('chsbtn');
   inp.value = ''; btn.disabled = true;
-
   addChatMsg('user', msg);
   chatHistory.push({role:'human', content:msg});
 
-  // Show typing indicator
   const typing = document.getElementById('ctyp');
   typing.classList.remove('hidden');
   document.getElementById('chmsg').appendChild(typing);
-  document.getElementById('chmsg').scrollTop = document.getElementById('chmsg').scrollHeight;
+  document.getElementById('chmsg').scrollTop = 99999;
 
   const dashboardContext = {
-    available: true,
-    stats: {
-      totalAgents: 9,
-      shipped: SPRINT_TASKS.filter(t => t.col === 'done').length,
-      building: SPRINT_TASKS.filter(t => t.col === 'in_progress').length,
-      backlog: SPRINT_TASKS.filter(t => t.col === 'open').length,
-      sprintActive: SPRINT_TASKS.filter(t => t.col === 'in_progress').length,
-      sprintShipped: SPRINT_TASKS.filter(t => t.col === 'done').length,
-      sprintTotal: SPRINT_TASKS.length,
-    },
-    buildPipeline: SPRINT_TASKS.filter(t => t.col !== 'done').map(t => ({name:t.title, status:t.col, priority:'normal'})),
-    recentActivity: AGENTS.slice(0, 5).map(a => ({name:a.name, status:a.status})),
+    available:true,
+    stats:{totalAgents:9, shipped:SPRINT_TASKS.filter(t=>t.col==='done').length, building:SPRINT_TASKS.filter(t=>t.col==='in_progress').length, backlog:SPRINT_TASKS.filter(t=>t.col==='open').length},
+    buildPipeline:SPRINT_TASKS.filter(t=>t.col!=='done').map(t=>({name:t.title,status:t.col})),
+    recentActivity:AGENTS.slice(0,5).map(a=>({name:a.name,status:a.status,sr:a.sr})),
   };
 
   try {
     const res = await fetch(CHAT_URL, {
-      method: 'POST',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({
-        token: CHAT_TOKEN,
-        message: msg,
-        conversationHistory: chatHistory.slice(-10),
-        dashboardContext,
-      })
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({token:CHAT_TOKEN, message:msg, conversationHistory:chatHistory.slice(-10), dashboardContext})
     });
     const data = await res.json();
     typing.classList.add('hidden');
-    const reply = (data && (data.reply || data.error)) || 'No response received.';
-    addChatMsg('assistant', reply);
-    chatHistory.push({role:'assistant', content:reply});
-  } catch (err) {
+    addChatMsg('assistant', (data && (data.reply || data.error)) || 'No response received.');
+    if (data && data.reply) chatHistory.push({role:'assistant', content:data.reply});
+  } catch {
     typing.classList.add('hidden');
     addChatMsg('assistant', 'Connection error — the GRID Chat webhook may be offline. Check N8N Cloud for the grid-chat workflow status.');
   }
-  btn.disabled = false;
-  inp.focus();
-  updateCtx();
+  btn.disabled = false; inp.focus(); updateCtx();
 }
 
 document.getElementById('chinput').addEventListener('keydown', e => {
@@ -977,7 +1201,7 @@ document.getElementById('chinput').addEventListener('keydown', e => {
 });
 
 // ═══════════════════════════════════════════════════
-// NETWORK GRAPH — Canvas
+// NETWORK GRAPH — Curved bezier edges + glow trails
 // ═══════════════════════════════════════════════════
 const canvas = document.getElementById('net-canvas');
 const ctx2d = canvas.getContext('2d');
@@ -1008,7 +1232,8 @@ const NET_EDGES = [
   {from:'V3',to:'F4',label:'drift'},
 ];
 
-const packets = NET_EDGES.map(e => ({...e, t:Math.random(), spd:0.004 + Math.random() * 0.003}));
+// Packets: each has position t (0-1) and a trail of recent positions
+const packets = NET_EDGES.map(e => ({...e, t:Math.random(), spd:0.004 + Math.random()*0.003, trail:[]}));
 
 function npos(n) { return {x: n.rx * canvas.width, y: n.ry * canvas.height}; }
 
@@ -1018,45 +1243,81 @@ function resizeCanvas() {
   canvas.height = wrap.clientHeight;
 }
 
+// Quadratic bezier control point (slight curve perpendicular to midpoint)
+function getBezierControl(x1, y1, x2, y2, curvature) {
+  curvature = curvature || 0.18;
+  const mx = (x1 + x2) / 2, my = (y1 + y2) / 2;
+  const dx = x2 - x1, dy = y2 - y1;
+  const len = Math.hypot(dx, dy) || 1;
+  return {cx: mx - dy / len * len * curvature, cy: my + dx / len * len * curvature};
+}
+
+// Point on quadratic bezier at t
+function bezierPoint(x1, y1, cx, cy, x2, y2, t) {
+  const mt = 1 - t;
+  return {
+    x: mt*mt*x1 + 2*mt*t*cx + t*t*x2,
+    y: mt*mt*y1 + 2*mt*t*cy + t*t*y2
+  };
+}
+
 function drawNet() {
   frame++;
   ctx2d.clearRect(0, 0, canvas.width, canvas.height);
 
-  // Dot grid background
-  ctx2d.fillStyle = 'rgba(26,45,70,0.45)';
-  for (let x = 0; x < canvas.width; x += 30)
-    for (let y = 0; y < canvas.height; y += 30) {
-      ctx2d.beginPath(); ctx2d.arc(x, y, 0.8, 0, Math.PI*2); ctx2d.fill();
-    }
-
-  // Edges
+  // Edges (curved bezier, dashed)
   NET_EDGES.forEach(e => {
     const fn = NET_NODES.find(n => n.id === e.from);
     const tn = NET_NODES.find(n => n.id === e.to);
     if (!fn || !tn) return;
     const fp = npos(fn), tp = npos(tn);
-    ctx2d.beginPath(); ctx2d.moveTo(fp.x, fp.y); ctx2d.lineTo(tp.x, tp.y);
-    ctx2d.strokeStyle = 'rgba(26,45,70,0.9)'; ctx2d.lineWidth = 1;
-    ctx2d.setLineDash([3, 7]); ctx2d.stroke(); ctx2d.setLineDash([]);
-    const mx = (fp.x+tp.x)/2, my = (fp.y+tp.y)/2;
-    ctx2d.fillStyle = 'rgba(74,106,138,0.6)';
+    const {cx, cy} = getBezierControl(fp.x, fp.y, tp.x, tp.y);
+
+    ctx2d.beginPath();
+    ctx2d.moveTo(fp.x, fp.y);
+    ctx2d.quadraticCurveTo(cx, cy, tp.x, tp.y);
+    ctx2d.strokeStyle = 'rgba(30,51,80,0.9)';
+    ctx2d.lineWidth = 1;
+    ctx2d.setLineDash([3, 8]);
+    ctx2d.stroke();
+    ctx2d.setLineDash([]);
+
+    // Edge label at midpoint of bezier (t=0.5)
+    const mid = bezierPoint(fp.x, fp.y, cx, cy, tp.x, tp.y, 0.5);
+    ctx2d.fillStyle = 'rgba(74,106,138,0.65)';
     ctx2d.font = '8px Share Tech Mono,monospace';
     ctx2d.textAlign = 'center'; ctx2d.textBaseline = 'middle';
-    ctx2d.fillText(e.label, mx, my - 4);
+    ctx2d.fillText(e.label, mid.x, mid.y - 4);
   });
 
-  // Packets
+  // Packets with trails
   packets.forEach(p => {
     p.t = (p.t + p.spd) % 1;
     const fn = NET_NODES.find(n => n.id === p.from);
     const tn = NET_NODES.find(n => n.id === p.to);
     if (!fn || !tn) return;
     const fp = npos(fn), tp = npos(tn);
-    const px = fp.x + (tp.x - fp.x) * p.t;
-    const py = fp.y + (tp.y - fp.y) * p.t;
-    ctx2d.beginPath(); ctx2d.arc(px, py, 2.5, 0, Math.PI*2);
+    const {cx, cy} = getBezierControl(fp.x, fp.y, tp.x, tp.y);
+    const {x: px, y: py} = bezierPoint(fp.x, fp.y, cx, cy, tp.x, tp.y, p.t);
+
+    // Update trail
+    p.trail.push({x: px, y: py});
+    if (p.trail.length > 10) p.trail.shift();
+
+    // Draw trail (fading glow dots)
+    p.trail.forEach((pt, ti) => {
+      const alpha = (ti / p.trail.length) * 0.45;
+      const radius = 1.2 + (ti / p.trail.length) * 1.5;
+      const alphaHex = Math.round(alpha * 255).toString(16).padStart(2,'0');
+      ctx2d.beginPath(); ctx2d.arc(pt.x, pt.y, radius, 0, Math.PI*2);
+      ctx2d.fillStyle = fn.color + alphaHex;
+      ctx2d.fill();
+    });
+
+    // Main packet
+    ctx2d.beginPath(); ctx2d.arc(px, py, 3, 0, Math.PI*2);
     ctx2d.fillStyle = fn.color;
-    ctx2d.shadowBlur = 8; ctx2d.shadowColor = fn.color;
+    ctx2d.shadowBlur = 10; ctx2d.shadowColor = fn.color;
     ctx2d.fill(); ctx2d.shadowBlur = 0;
   });
 
@@ -1064,27 +1325,33 @@ function drawNet() {
   NET_NODES.forEach((n, idx) => {
     const p = npos(n);
     const hov = hovNode?.id === n.id;
-    const pulse = Math.sin(frame * 0.04 + idx) * 3;
+    const pulse = Math.sin(frame * 0.04 + idx) * 2.5;
 
+    // Hover outer ring
     if (hov) {
-      ctx2d.beginPath(); ctx2d.arc(p.x, p.y, n.r + 12, 0, Math.PI*2);
-      ctx2d.strokeStyle = n.color + '33'; ctx2d.lineWidth = 1; ctx2d.stroke();
+      ctx2d.beginPath(); ctx2d.arc(p.x, p.y, n.r + 16, 0, Math.PI*2);
+      ctx2d.strokeStyle = n.color + '22'; ctx2d.lineWidth = 1; ctx2d.stroke();
     }
 
-    ctx2d.beginPath(); ctx2d.arc(p.x, p.y, n.r + 5 + pulse, 0, Math.PI*2);
-    ctx2d.strokeStyle = n.color + '1A'; ctx2d.lineWidth = 1.5; ctx2d.stroke();
+    // Pulsing outer ring
+    ctx2d.beginPath(); ctx2d.arc(p.x, p.y, n.r + 6 + pulse, 0, Math.PI*2);
+    ctx2d.strokeStyle = n.color + '18'; ctx2d.lineWidth = 1.5; ctx2d.stroke();
 
+    // Main circle
     ctx2d.beginPath(); ctx2d.arc(p.x, p.y, n.r, 0, Math.PI*2);
-    ctx2d.fillStyle = n.color + '18'; ctx2d.fill();
-    ctx2d.strokeStyle = n.color + (hov ? 'BB' : '55');
-    ctx2d.lineWidth = hov ? 2 : 1.5;
-    ctx2d.shadowBlur = hov ? 18 : 8; ctx2d.shadowColor = n.color;
+    ctx2d.fillStyle = n.color + '1A'; ctx2d.fill();
+    ctx2d.strokeStyle = n.color + (hov ? 'CC' : '55');
+    ctx2d.lineWidth = hov ? 2.5 : 1.5;
+    ctx2d.shadowBlur = hov ? 22 : 10; ctx2d.shadowColor = n.color;
     ctx2d.stroke(); ctx2d.shadowBlur = 0;
 
+    // Label
     ctx2d.fillStyle = n.color;
     ctx2d.font = `700 ${n.id === 'F4' ? 13 : 11}px Syne,sans-serif`;
     ctx2d.textAlign = 'center'; ctx2d.textBaseline = 'middle';
+    ctx2d.shadowBlur = hov ? 8 : 0; ctx2d.shadowColor = n.color;
     ctx2d.fillText(n.label, p.x, p.y - 2);
+    ctx2d.shadowBlur = 0;
     ctx2d.font = '8px Share Tech Mono,monospace';
     ctx2d.fillStyle = n.color + '88';
     ctx2d.fillText(n.sub, p.x, p.y + 10);
@@ -1102,14 +1369,14 @@ canvas.addEventListener('mousemove', e => {
   if (hovNode) {
     const a = hovNode.agent;
     tip.style.opacity = '1';
-    tip.style.left = (mx + 14) + 'px';
+    const tipX = Math.min(mx + 14, canvas.width - 185);
+    tip.style.left = tipX + 'px';
     tip.style.top = Math.max(0, my - 52) + 'px';
     document.getElementById('nt-n').textContent = a.name;
     document.getElementById('nt-d').textContent = `Status: ${a.status} | Trigger: ${a.trigger}\nToday: ${a.execs} runs · ${a.sr}% ok\nLast: ${a.lastRun}`;
     canvas.style.cursor = 'pointer';
   } else {
-    tip.style.opacity = '0';
-    canvas.style.cursor = 'default';
+    tip.style.opacity = '0'; canvas.style.cursor = 'default';
   }
 });
 canvas.addEventListener('mouseleave', () => { document.getElementById('net-tip').style.opacity = '0'; hovNode = null; });
