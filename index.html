@@ -197,14 +197,14 @@ kbd{font-size:9px;padding:1px 4px;border:1px solid var(--bdr2);border-radius:2px
 .ls.err{background:rgba(239,68,68,.12);color:var(--red);}
 
 /* CONFIG */
-#config{overflow-y:auto;padding:14px;width:100%;height:100%;display:flex;flex-direction:column;gap:10px;}
+#config{overflow-y:auto;padding:14px;width:100%;height:100%;display:grid;grid-template-columns:1fr 1fr;gap:10px;align-content:start;}
 .cfgs{background:var(--pnl);border:1px solid var(--bdr);}
 .cfgt{padding:9px 14px;border-bottom:1px solid var(--bdr);font-family:var(--display);font-weight:700;font-size:10px;letter-spacing:.15em;color:var(--gold);text-transform:uppercase;}
-.cfgr{display:flex;align-items:center;justify-content:space-between;padding:7px 14px;border-bottom:1px solid var(--bdr);font-size:10px;gap:8px;transition:background .12s;}
+.cfgr{display:grid;grid-template-columns:150px 1fr auto;align-items:center;padding:7px 14px;border-bottom:1px solid var(--bdr);font-size:10px;gap:10px;transition:background .12s;}
 .cfgr:hover{background:rgba(232,160,32,.02);}
 .cfgr:last-child{border-bottom:none;}
-.cfgk{color:var(--muted);text-transform:uppercase;font-size:8px;letter-spacing:.1em;flex-shrink:0;}
-.cfgv{color:var(--txt);font-size:9px;flex:1;text-align:right;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.cfgk{color:var(--muted);text-transform:uppercase;font-size:8px;letter-spacing:.1em;}
+.cfgv{color:var(--txt);font-size:9px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 .cbdg{padding:2px 7px;border-radius:2px;font-size:8px;text-transform:uppercase;letter-spacing:.08em;flex-shrink:0;}
 .cbdg.active{background:rgba(16,185,129,.12);color:var(--grn);border:1px solid rgba(16,185,129,.25);}
 .cbdg.cloud{background:rgba(59,130,246,.1);color:var(--blue);border:1px solid rgba(59,130,246,.2);}
@@ -1303,16 +1303,21 @@ const canvas = document.getElementById('net-canvas');
 const ctx2d = canvas.getContext('2d');
 let hovNode = null, frame = 0;
 
+// Tree layout: Tier0=Triggers → Tier1=Router → Tier2=Agents → Tier3=Processors
 const NET_NODES = [
-  {id:'F4',label:'F4',sub:'Router',  rx:.50,ry:.42,color:'#E8A020',r:24,agent:AGENTS[0]},
-  {id:'G1',label:'G1',sub:'Email',   rx:.22,ry:.22,color:'#3B82F6',r:19,agent:AGENTS[1]},
-  {id:'R2',label:'R2',sub:'Research',rx:.78,ry:.22,color:'#10B981',r:19,agent:AGENTS[2]},
-  {id:'QR',label:'QR',sub:'Oracle',  rx:.22,ry:.66,color:'#8B5CF6',r:19,agent:AGENTS[3]},
-  {id:'X1',label:'X1',sub:'Logger',  rx:.78,ry:.66,color:'#F59E0B',r:19,agent:AGENTS[4]},
-  {id:'SP',label:'SP',sub:'Sprint',  rx:.11,ry:.44,color:'#10B981',r:15,agent:AGENTS[5]},
-  {id:'FA',label:'FA',sub:'Auditor', rx:.50,ry:.12,color:'#EF4444',r:15,agent:AGENTS[6]},
-  {id:'V3',label:'V3',sub:'Drift',   rx:.89,ry:.44,color:'#F59E0B',r:15,agent:AGENTS[7]},
-  {id:'A1',label:'A1',sub:'Info',    rx:.50,ry:.81,color:'#3B82F6',r:15,agent:AGENTS[8]},
+  // Tier 0 — Triggers (y=0.08)
+  {id:'SP',label:'SP',sub:'Sprint',  rx:.25,ry:.08,color:'#10B981',r:15,agent:AGENTS[5]},
+  {id:'V3',label:'V3',sub:'Drift',   rx:.75,ry:.08,color:'#F59E0B',r:15,agent:AGENTS[7]},
+  // Tier 1 — Router (y=0.32)
+  {id:'F4',label:'F4',sub:'Router',  rx:.50,ry:.32,color:'#E8A020',r:24,agent:AGENTS[0]},
+  // Tier 2 — Agents (y=0.60)
+  {id:'G1',label:'G1',sub:'Email',   rx:.14,ry:.60,color:'#3B82F6',r:19,agent:AGENTS[1]},
+  {id:'R2',label:'R2',sub:'Research',rx:.38,ry:.60,color:'#10B981',r:19,agent:AGENTS[2]},
+  {id:'QR',label:'QR',sub:'Oracle',  rx:.62,ry:.60,color:'#8B5CF6',r:19,agent:AGENTS[3]},
+  {id:'A1',label:'A1',sub:'Info',    rx:.86,ry:.60,color:'#3B82F6',r:15,agent:AGENTS[8]},
+  // Tier 3 — Processors (y=0.88)
+  {id:'FA',label:'FA',sub:'Auditor', rx:.26,ry:.88,color:'#EF4444',r:15,agent:AGENTS[6]},
+  {id:'X1',label:'X1',sub:'Logger',  rx:.65,ry:.88,color:'#F59E0B',r:19,agent:AGENTS[4]},
 ];
 
 const NET_EDGES = [
@@ -1339,51 +1344,76 @@ function resizeCanvas() {
   canvas.height = wrap.clientHeight;
 }
 
-// Quadratic bezier control point (slight curve perpendicular to midpoint)
-function getBezierControl(x1, y1, x2, y2, curvature) {
-  curvature = curvature || 0.18;
-  const mx = (x1 + x2) / 2, my = (y1 + y2) / 2;
-  const dx = x2 - x1, dy = y2 - y1;
-  const len = Math.hypot(dx, dy) || 1;
-  return {cx: mx - dy / len * len * curvature, cy: my + dx / len * len * curvature};
+// S-curve cubic bezier: exits node vertically, bends to target (tree elbow style)
+function getCubicControls(x1, y1, x2, y2) {
+  const midY = (y1 + y2) / 2;
+  return {cx1: x1, cy1: midY, cx2: x2, cy2: midY};
 }
 
-// Point on quadratic bezier at t
-function bezierPoint(x1, y1, cx, cy, x2, y2, t) {
+// Point on cubic bezier at t
+function cubicPoint(x1, y1, cx1, cy1, cx2, cy2, x2, y2, t) {
   const mt = 1 - t;
   return {
-    x: mt*mt*x1 + 2*mt*t*cx + t*t*x2,
-    y: mt*mt*y1 + 2*mt*t*cy + t*t*y2
+    x: mt*mt*mt*x1 + 3*mt*mt*t*cx1 + 3*mt*t*t*cx2 + t*t*t*x2,
+    y: mt*mt*mt*y1 + 3*mt*mt*t*cy1 + 3*mt*t*t*cy2 + t*t*t*y2
   };
 }
+
+// Tier label definitions for canvas annotation
+const TIER_LABELS = [
+  {text:'TRIGGERS',  ry:.08},
+  {text:'ROUTER',    ry:.32},
+  {text:'AGENTS',    ry:.60},
+  {text:'PROCESSORS',ry:.88},
+];
 
 function drawNet() {
   frame++;
   ctx2d.clearRect(0, 0, canvas.width, canvas.height);
 
-  // Edges (curved bezier, dashed)
+  // Tier labels (left rail)
+  ctx2d.font = '7px Share Tech Mono,monospace';
+  ctx2d.textAlign = 'left'; ctx2d.textBaseline = 'middle';
+  TIER_LABELS.forEach(t => {
+    ctx2d.fillStyle = 'rgba(74,106,138,0.32)';
+    ctx2d.fillText('— ' + t.text, 8, t.ry * canvas.height);
+  });
+
+  // Edges (S-curve cubic bezier)
   NET_EDGES.forEach(e => {
     const fn = NET_NODES.find(n => n.id === e.from);
     const tn = NET_NODES.find(n => n.id === e.to);
     if (!fn || !tn) return;
     const fp = npos(fn), tp = npos(tn);
-    const {cx, cy} = getBezierControl(fp.x, fp.y, tp.x, tp.y);
+    const {cx1, cy1, cx2, cy2} = getCubicControls(fp.x, fp.y, tp.x, tp.y);
 
     ctx2d.beginPath();
     ctx2d.moveTo(fp.x, fp.y);
-    ctx2d.quadraticCurveTo(cx, cy, tp.x, tp.y);
+    ctx2d.bezierCurveTo(cx1, cy1, cx2, cy2, tp.x, tp.y);
     ctx2d.strokeStyle = 'rgba(30,51,80,0.9)';
     ctx2d.lineWidth = 1;
     ctx2d.setLineDash([3, 8]);
     ctx2d.stroke();
     ctx2d.setLineDash([]);
 
-    // Edge label at midpoint of bezier (t=0.5)
-    const mid = bezierPoint(fp.x, fp.y, cx, cy, tp.x, tp.y, 0.5);
+    // Arrowhead at target
+    const near = cubicPoint(fp.x, fp.y, cx1, cy1, cx2, cy2, tp.x, tp.y, 0.92);
+    const angle = Math.atan2(tp.y - near.y, tp.x - near.x);
+    const asz = 5;
+    ctx2d.beginPath();
+    ctx2d.moveTo(tp.x, tp.y);
+    ctx2d.lineTo(tp.x - asz * Math.cos(angle - 0.4), tp.y - asz * Math.sin(angle - 0.4));
+    ctx2d.lineTo(tp.x - asz * Math.cos(angle + 0.4), tp.y - asz * Math.sin(angle + 0.4));
+    ctx2d.closePath();
+    ctx2d.fillStyle = fn.color + '66';
+    ctx2d.fill();
+
+    // Edge label at midpoint (t=0.5)
+    const mid = cubicPoint(fp.x, fp.y, cx1, cy1, cx2, cy2, tp.x, tp.y, 0.5);
     ctx2d.fillStyle = 'rgba(74,106,138,0.65)';
     ctx2d.font = '8px Share Tech Mono,monospace';
     ctx2d.textAlign = 'center'; ctx2d.textBaseline = 'middle';
-    ctx2d.fillText(e.label, mid.x, mid.y - 4);
+    ctx2d.fillText(e.label, mid.x, mid.y - 5);
   });
 
   // Packets with trails
@@ -1393,8 +1423,8 @@ function drawNet() {
     const tn = NET_NODES.find(n => n.id === p.to);
     if (!fn || !tn) return;
     const fp = npos(fn), tp = npos(tn);
-    const {cx, cy} = getBezierControl(fp.x, fp.y, tp.x, tp.y);
-    const {x: px, y: py} = bezierPoint(fp.x, fp.y, cx, cy, tp.x, tp.y, p.t);
+    const {cx1, cy1, cx2, cy2} = getCubicControls(fp.x, fp.y, tp.x, tp.y);
+    const {x: px, y: py} = cubicPoint(fp.x, fp.y, cx1, cy1, cx2, cy2, tp.x, tp.y, p.t);
 
     // Update trail
     p.trail.push({x: px, y: py});
