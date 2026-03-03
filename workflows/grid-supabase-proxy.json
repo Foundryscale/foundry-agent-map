@@ -1,5 +1,5 @@
 {
-  "name": "GS1 \u2014 Supabase Proxy v1.3",
+  "name": "GS1 — Supabase Proxy v1.3",
   "nodes": [
     {
       "id": "da6795fe-055e-4ab4-a7bf-a4ed6d3261ef",
@@ -183,30 +183,13 @@
       ],
       "parameters": {
         "method": "GET",
-        "url": "={{ 'https://fppuoqteleayiepoykyc.supabase.co/rest/v1/executions?select=success,created_at,agent_id&created_at=gte.' + encodeURIComponent(new Date(Date.now()-86400000).toISOString()) + '&order=created_at.desc&limit=500' }}",
+        "url": "={{ 'https://fppuoqteleayiepoykyc.supabase.co/rest/v1/executions?apikey=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZwcHVvcXRlbGVheWllcG95a3ljIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE4NjI0ODksImV4cCI6MjA4NzQzODQ4OX0.BlTjMTosZIN5poVrjCAuHCaZPt-_S47YfMvxAGlPfs8&select=success,created_at,agent_id&created_at=gte.' + encodeURIComponent(new Date(Date.now()-86400000).toISOString()) + '&order=created_at.desc&limit=500' }}",
         "options": {
           "response": {
             "response": {
-              "responseFormat": "json"
+              "responseFormat": "text"
             }
           }
-        },
-        "sendHeaders": true,
-        "headerParameters": {
-          "parameters": [
-            {
-              "name": "apikey",
-              "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZwcHVvcXRlbGVheWllcG95a3ljIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE4NjI0ODksImV4cCI6MjA4NzQzODQ4OX0.BlTjMTosZIN5poVrjCAuHCaZPt-_S47YfMvxAGlPfs8"
-            },
-            {
-              "name": "Authorization",
-              "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZwcHVvcXRlbGVheWllcG95a3ljIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE4NjI0ODksImV4cCI6MjA4NzQzODQ4OX0.BlTjMTosZIN5poVrjCAuHCaZPt-_S47YfMvxAGlPfs8"
-            },
-            {
-              "name": "Accept",
-              "value": "application/json"
-            }
-          ]
         }
       }
     },
@@ -220,7 +203,7 @@
         240
       ],
       "parameters": {
-        "jsCode": "const rows = Array.isArray($json) ? $json : [];\nconst today = new Date().toISOString().slice(0,10);\nconst execsToday = rows.filter(r => r.created_at && r.created_at.startsWith(today)).length;\nconst succ = rows.filter(r => r.success === true || r.success === 'true').length;\nconst successRate = rows.length ? Math.round((succ/rows.length)*1000)/10 : 0;\nconst slackEvents = rows.filter(r => r.agent_id && r.agent_id.toLowerCase().includes('f4') && r.created_at && r.created_at.startsWith(today)).length;\nreturn [{ json: { type: 'kpis', data: { execsToday, successRate, slackEvents }, ts: new Date().toISOString() } }];",
+        "jsCode": "const raw = $json.data || $json.body || '[]';\nconst rows = typeof raw === 'string' ? JSON.parse(raw) : (Array.isArray(raw) ? raw : []);\nconst today = new Date().toISOString().slice(0,10);\nconst execsToday = rows.filter(r => r.created_at && r.created_at.startsWith(today)).length;\nconst succ = rows.filter(r => r.success === true || r.success === 'true').length;\nconst successRate = rows.length ? Math.round((succ/rows.length)*1000)/10 : 0;\nconst slackEvents = rows.filter(r => r.agent_id && r.agent_id.toLowerCase().includes('f4') && r.created_at && r.created_at.startsWith(today)).length;\nreturn [{ json: { type: 'kpis', data: { execsToday, successRate, slackEvents }, ts: new Date().toISOString() } }];",
         "mode": "runOnceForAllItems"
       }
     },
@@ -235,30 +218,13 @@
       ],
       "parameters": {
         "method": "GET",
-        "url": "={{ 'https://fppuoqteleayiepoykyc.supabase.co/rest/v1/executions?select=agent_id,created_at&created_at=gte.' + encodeURIComponent(new Date(Date.now()-7*86400000).toISOString()) + '&order=created_at.asc&limit=1000' }}",
+        "url": "={{ 'https://fppuoqteleayiepoykyc.supabase.co/rest/v1/executions?apikey=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZwcHVvcXRlbGVheWllcG95a3ljIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE4NjI0ODksImV4cCI6MjA4NzQzODQ4OX0.BlTjMTosZIN5poVrjCAuHCaZPt-_S47YfMvxAGlPfs8&select=agent_id,created_at&created_at=gte.' + encodeURIComponent(new Date(Date.now()-7*86400000).toISOString()) + '&order=created_at.asc&limit=1000' }}",
         "options": {
           "response": {
             "response": {
-              "responseFormat": "json"
+              "responseFormat": "text"
             }
           }
-        },
-        "sendHeaders": true,
-        "headerParameters": {
-          "parameters": [
-            {
-              "name": "apikey",
-              "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZwcHVvcXRlbGVheWllcG95a3ljIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE4NjI0ODksImV4cCI6MjA4NzQzODQ4OX0.BlTjMTosZIN5poVrjCAuHCaZPt-_S47YfMvxAGlPfs8"
-            },
-            {
-              "name": "Authorization",
-              "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZwcHVvcXRlbGVheWllcG95a3ljIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE4NjI0ODksImV4cCI6MjA4NzQzODQ4OX0.BlTjMTosZIN5poVrjCAuHCaZPt-_S47YfMvxAGlPfs8"
-            },
-            {
-              "name": "Accept",
-              "value": "application/json"
-            }
-          ]
         }
       }
     },
@@ -272,7 +238,7 @@
         380
       ],
       "parameters": {
-        "jsCode": "const rows = Array.isArray($json) ? $json : [];\nconst map = {};\nrows.forEach(r => {\n  const key = (r.agent_id||'unknown') + '|' + (r.created_at||'').slice(0,10);\n  map[key] = (map[key]||0)+1;\n});\nconst heatmap = Object.entries(map).map(([k,v]) => { const [agent_id,day] = k.split('|'); return {agent_id,day,cnt:v}; });\nreturn [{ json: { type: 'heatmap', data: { heatmap }, ts: new Date().toISOString() } }];",
+        "jsCode": "const raw = $json.data || $json.body || '[]';\nconst rows = typeof raw === 'string' ? JSON.parse(raw) : (Array.isArray(raw) ? raw : []);\nconst map = {};\nrows.forEach(r => {\n  const key = (r.agent_id||'unknown') + '|' + (r.created_at||'').slice(0,10);\n  map[key] = (map[key]||0)+1;\n});\nconst heatmap = Object.entries(map).map(([k,v]) => { const [agent_id,day] = k.split('|'); return {agent_id,day,cnt:v}; });\nreturn [{ json: { type: 'heatmap', data: { heatmap }, ts: new Date().toISOString() } }];",
         "mode": "runOnceForAllItems"
       }
     },
@@ -287,30 +253,13 @@
       ],
       "parameters": {
         "method": "GET",
-        "url": "={{ 'https://fppuoqteleayiepoykyc.supabase.co/rest/v1/executions?select=agent_id,tokens_used,created_at&created_at=gte.' + encodeURIComponent(new Date(Date.now()-7*86400000).toISOString()) + '&tokens_used=not.is.null&order=created_at.asc&limit=500' }}",
+        "url": "={{ 'https://fppuoqteleayiepoykyc.supabase.co/rest/v1/executions?apikey=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZwcHVvcXRlbGVheWllcG95a3ljIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE4NjI0ODksImV4cCI6MjA4NzQzODQ4OX0.BlTjMTosZIN5poVrjCAuHCaZPt-_S47YfMvxAGlPfs8&select=agent_id,tokens_used,created_at&created_at=gte.' + encodeURIComponent(new Date(Date.now()-7*86400000).toISOString()) + '&tokens_used=not.is.null&order=created_at.asc&limit=500' }}",
         "options": {
           "response": {
             "response": {
-              "responseFormat": "json"
+              "responseFormat": "text"
             }
           }
-        },
-        "sendHeaders": true,
-        "headerParameters": {
-          "parameters": [
-            {
-              "name": "apikey",
-              "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZwcHVvcXRlbGVheWllcG95a3ljIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE4NjI0ODksImV4cCI6MjA4NzQzODQ4OX0.BlTjMTosZIN5poVrjCAuHCaZPt-_S47YfMvxAGlPfs8"
-            },
-            {
-              "name": "Authorization",
-              "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZwcHVvcXRlbGVheWllcG95a3ljIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE4NjI0ODksImV4cCI6MjA4NzQzODQ4OX0.BlTjMTosZIN5poVrjCAuHCaZPt-_S47YfMvxAGlPfs8"
-            },
-            {
-              "name": "Accept",
-              "value": "application/json"
-            }
-          ]
         }
       }
     },
@@ -324,7 +273,7 @@
         520
       ],
       "parameters": {
-        "jsCode": "const rows = Array.isArray($json) ? $json : [];\nconst today = new Date().toISOString().slice(0,10);\nconst tokensToday = rows.filter(r => r.created_at && r.created_at.startsWith(today)).reduce((s,r)=>s+(r.tokens_used||0),0);\nconst tokens7d = rows.reduce((s,r)=>s+(r.tokens_used||0),0);\nreturn [{ json: { type: 'cost', data: { tokensToday, tokens7d }, ts: new Date().toISOString() } }];",
+        "jsCode": "const raw = $json.data || $json.body || '[]';\nconst rows = typeof raw === 'string' ? JSON.parse(raw) : (Array.isArray(raw) ? raw : []);\nconst today = new Date().toISOString().slice(0,10);\nconst tokensToday = rows.filter(r => r.created_at && r.created_at.startsWith(today)).reduce((s,r)=>s+(r.tokens_used||0),0);\nconst tokens7d = rows.reduce((s,r)=>s+(r.tokens_used||0),0);\nreturn [{ json: { type: 'cost', data: { tokensToday, tokens7d }, ts: new Date().toISOString() } }];",
         "mode": "runOnceForAllItems"
       }
     },
@@ -339,30 +288,13 @@
       ],
       "parameters": {
         "method": "GET",
-        "url": "'https://fppuoqteleayiepoykyc.supabase.co/rest/v1/workflow_snapshots?select=id,snapshot_date,workflow_id,workflow_name,active,node_count&order=snapshot_date.desc&limit=50'",
+        "url": "={{ 'https://fppuoqteleayiepoykyc.supabase.co/rest/v1/workflow_snapshots?apikey=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZwcHVvcXRlbGVheWllcG95a3ljIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE4NjI0ODksImV4cCI6MjA4NzQzODQ4OX0.BlTjMTosZIN5poVrjCAuHCaZPt-_S47YfMvxAGlPfs8&select=id,snapshot_date,workflow_id,workflow_name,active,node_count&order=snapshot_date.desc&limit=50' }}",
         "options": {
           "response": {
             "response": {
-              "responseFormat": "json"
+              "responseFormat": "text"
             }
           }
-        },
-        "sendHeaders": true,
-        "headerParameters": {
-          "parameters": [
-            {
-              "name": "apikey",
-              "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZwcHVvcXRlbGVheWllcG95a3ljIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE4NjI0ODksImV4cCI6MjA4NzQzODQ4OX0.BlTjMTosZIN5poVrjCAuHCaZPt-_S47YfMvxAGlPfs8"
-            },
-            {
-              "name": "Authorization",
-              "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZwcHVvcXRlbGVheWllcG95a3ljIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE4NjI0ODksImV4cCI6MjA4NzQzODQ4OX0.BlTjMTosZIN5poVrjCAuHCaZPt-_S47YfMvxAGlPfs8"
-            },
-            {
-              "name": "Accept",
-              "value": "application/json"
-            }
-          ]
         }
       }
     },
@@ -376,7 +308,7 @@
         660
       ],
       "parameters": {
-        "jsCode": "const rows = Array.isArray($json) ? $json : [];\nreturn [{ json: { type: 'snapshots', data: { snapshots: rows }, ts: new Date().toISOString() } }];",
+        "jsCode": "const raw = $json.data || $json.body || '[]';\nconst rows = typeof raw === 'string' ? JSON.parse(raw) : (Array.isArray(raw) ? raw : []);\nreturn [{ json: { type: 'snapshots', data: { snapshots: rows }, ts: new Date().toISOString() } }];",
         "mode": "runOnceForAllItems"
       }
     },
@@ -391,30 +323,13 @@
       ],
       "parameters": {
         "method": "GET",
-        "url": "={{ 'https://fppuoqteleayiepoykyc.supabase.co/rest/v1/executions?select=id,agent_id,success,created_at,tokens_used,input,output&order=created_at.desc&limit=' + ($json.queryLimit || 20) }}",
+        "url": "={{ 'https://fppuoqteleayiepoykyc.supabase.co/rest/v1/executions?apikey=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZwcHVvcXRlbGVheWllcG95a3ljIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE4NjI0ODksImV4cCI6MjA4NzQzODQ4OX0.BlTjMTosZIN5poVrjCAuHCaZPt-_S47YfMvxAGlPfs8&select=id,agent_id,success,created_at,tokens_used,input,output&order=created_at.desc&limit=' + ($json.queryLimit || 20) }}",
         "options": {
           "response": {
             "response": {
-              "responseFormat": "json"
+              "responseFormat": "text"
             }
           }
-        },
-        "sendHeaders": true,
-        "headerParameters": {
-          "parameters": [
-            {
-              "name": "apikey",
-              "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZwcHVvcXRlbGVheWllcG95a3ljIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE4NjI0ODksImV4cCI6MjA4NzQzODQ4OX0.BlTjMTosZIN5poVrjCAuHCaZPt-_S47YfMvxAGlPfs8"
-            },
-            {
-              "name": "Authorization",
-              "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZwcHVvcXRlbGVheWllcG95a3ljIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE4NjI0ODksImV4cCI6MjA4NzQzODQ4OX0.BlTjMTosZIN5poVrjCAuHCaZPt-_S47YfMvxAGlPfs8"
-            },
-            {
-              "name": "Accept",
-              "value": "application/json"
-            }
-          ]
         }
       }
     },
@@ -428,7 +343,7 @@
         800
       ],
       "parameters": {
-        "jsCode": "const rows = Array.isArray($json) ? $json : [];\nreturn [{ json: { type: 'executions', data: rows, ts: new Date().toISOString() } }];",
+        "jsCode": "const raw = $json.data || $json.body || '[]';\nconst rows = typeof raw === 'string' ? JSON.parse(raw) : (Array.isArray(raw) ? raw : []);\nreturn [{ json: { type: 'executions', data: rows, ts: new Date().toISOString() } }];",
         "mode": "runOnceForAllItems"
       }
     },
@@ -648,6 +563,7 @@
   },
   "_meta": {
     "cloud_id": "BJcxSh9G78s4sHKG",
-    "deployed": "2026-03-02"
+    "deployed": "2026-03-02",
+    "arch": "v1.3-text-parse"
   }
 }
