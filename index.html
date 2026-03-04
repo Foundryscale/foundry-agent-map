@@ -335,7 +335,7 @@ kbd{font-size:9px;padding:1px 4px;border:1px solid var(--bdr2);border-radius:2px
   </button>
   <div class="tright">
     <div class="pill ok"><div class="dot g"></div> N8N Cloud</div>
-    <div class="pill ok"><div class="dot g"></div> Supabase</div>
+    <div class="pill ok"><div class="dot g"></div> Supabase</div><span id="supa-sync" style="font-size:9px;color:var(--dim);margin-left:4px;"></span>
     <div class="pill ok"><div class="dot g"></div> Slack</div>
     <div class="pill"><div class="dot a"></div> 9 Agents</div>
     <div id="clock"></div>
@@ -793,8 +793,10 @@ function countUp(el, target, duration) {
 }
 
 // ═══════════════════════════════════════════════════
-// GS1 PROXY — single authenticated endpoint for all Supabase queries
+// GS1 PROXY — single authenticated endpoint for aggregated Supabase queries
 // GS1 — Supabase Proxy (N8N Cloud ID: 8k2m4YLUXUEM7ian)
+// Note: executions queries bypass GS1 and go direct to Supabase REST to avoid
+// burning n8n execution quota (~2880 executions/day at 30s polling intervals).
 // ═══════════════════════════════════════════════════
 const GS1_URL = 'https://cprojects1.app.n8n.cloud/webhook/grid-supa-proxy';
 const PROXY_TOKEN = 'gfndr_px_yH7QMB5FwOu9Uu_jT41Y2mcE';
@@ -806,6 +808,21 @@ async function gs1Query(type, extra) {
     if (!res.ok) return null;
     const body = await res.json();
     return body.data || body;
+  } catch { return null; }
+}
+
+// Direct Supabase REST — zero n8n executions for high-frequency read-only queries
+const SUPA_URL = 'https://fppuoqteleayiepoykyc.supabase.co';
+const SUPA_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZwcHVvcXRlbGVheWllcG95a3ljIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE4NjI0ODksImV4cCI6MjA4NzQzODQ4OX0.BlTjMTosZIN5poVrjCAuHCaZPt-_S47YfMvxAGlPfs8';
+
+async function supaQuery(table, params) {
+  try {
+    const qs = new URLSearchParams(params).toString();
+    const res = await fetch(`${SUPA_URL}/rest/v1/${table}?${qs}`, {
+      headers: { apikey: SUPA_ANON, Accept: 'application/json' }
+    });
+    if (!res.ok) return null;
+    return await res.json();
   } catch { return null; }
 }
 
@@ -927,7 +944,7 @@ const AGENT_UUID_MAP = {
 const AGENT_BY_ID = {};
 AGENTS.forEach(a => { AGENT_BY_ID[a.id] = a; AGENT_BY_ID[a.id.toLowerCase()] = a; });
 
-let lastSeenExecId = null, toastCounter = 0, feedIdx = 0;
+let lastSeenExecId = null, toastCounter = 0, feedIdx = 0, supaFailCount = 0, lastSyncTime = null;
 
 function agentInfoFromRow(row) {
   // Try uuid map first, then agent_id string match
@@ -966,12 +983,23 @@ function renderFeedRow(e, isNew) {
 
 async function pollSupabase() {
   try {
-    const rows = await gs1Query('executions', { limit: '20' });
-    if (!rows || !rows.length) return false;
+    const rows = await supaQuery('executions', { order: 'id.desc', limit: '20' });
+    if (!rows || !rows.length) {
+      supaFailCount++;
+      if (supaFailCount >= 2) {
+        const supaPill = [...document.querySelectorAll('.pill')].find(p => p.textContent.includes('Supabase'));
+        if (supaPill) { supaPill.className = 'pill warn'; supaPill.firstChild.className = 'dot a'; }
+      }
+      return false;
+    }
 
-    // Update infra status pill
+    // Update infra status pill + sync timestamp
+    supaFailCount = 0;
+    lastSyncTime = new Date();
     const supaPill = [...document.querySelectorAll('.pill')].find(p => p.textContent.includes('Supabase'));
     if (supaPill) { supaPill.className = 'pill ok'; supaPill.firstChild.className = 'dot g'; }
+    const syncEl = document.getElementById('supa-sync');
+    if (syncEl) syncEl.textContent = 'synced ' + relativeTime(lastSyncTime.toISOString());
 
     // Find truly new rows since last poll
     const newRows = lastSeenExecId ? rows.filter(r => r.id > lastSeenExecId) : rows;
@@ -995,6 +1023,11 @@ async function pollSupabase() {
     });
     return newRows.length > 0;
   } catch {
+    supaFailCount++;
+    if (supaFailCount >= 2) {
+      const supaPill = [...document.querySelectorAll('.pill')].find(p => p.textContent.includes('Supabase'));
+      if (supaPill) { supaPill.className = 'pill warn'; supaPill.firstChild.className = 'dot a'; }
+    }
     return false;
   }
 }
@@ -1002,7 +1035,7 @@ async function pollSupabase() {
 // Bootstrap: poll Supabase on load, then every 30s
 (async function initFeed() {
   await pollSupabase();
-  setInterval(pollSupabase, 30000);
+  setInterval(pollSupabase, 60000);
 })();
 
 async function refreshFeed() {
@@ -1171,7 +1204,7 @@ async function renderLogs() {
   if (logsDone) return; logsDone = true;
   const el = document.getElementById('logbody');
   try {
-    const rows = await gs1Query('executions', { limit: '80' });
+    const rows = await supaQuery('executions', { order: 'id.desc', limit: '80' });
     if (!rows || !rows.length) {
       const row = mk('div', {cls:'lr', style:'grid-column:1/-1;color:var(--muted);padding:20px'});
       row.appendChild(mk('span', {text:'No execution data in Supabase yet.'}));
@@ -1289,7 +1322,7 @@ async function openModal(a) {
   // Async: fetch last 5 executions for this agent via GS1 proxy
   try {
     const agentIdLower = a.id.toLowerCase();
-    const allExecs = await gs1Query('executions', { limit: '50' }) || [];
+    const allExecs = await supaQuery('executions', { order: 'id.desc', limit: '50' }) || [];
     const execs = allExecs.filter(ex => (ex.agent_id||'').toLowerCase() === agentIdLower).slice(0, 5);
     clr(execsSection);
     execsSection.appendChild(mk('div', {cls:'am-chart-lbl', text:'Recent Executions'}));
@@ -1455,6 +1488,7 @@ async function sendChat() {
   inp.value = ''; btn.disabled = true;
   addChatMsg('user', msg);
   chatHistory.push({role:'human', content:msg});
+  if (chatHistory.length > 50) chatHistory = chatHistory.slice(-50);
 
   const typing = document.getElementById('ctyp');
   typing.classList.remove('hidden');
@@ -1473,10 +1507,14 @@ async function sendChat() {
       method:'POST', headers:{'Content-Type':'application/json'},
       body:JSON.stringify({token:CHAT_TOKEN, message:msg, conversationHistory:chatHistory.slice(-10), dashboardContext})
     });
+    if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
     const data = await res.json();
     typing.classList.add('hidden');
     addChatMsg('assistant', (data && (data.reply || data.error)) || 'No response received.');
-    if (data && data.reply) chatHistory.push({role:'assistant', content:data.reply});
+    if (data && data.reply) {
+      chatHistory.push({role:'assistant', content:data.reply});
+      if (chatHistory.length > 50) chatHistory = chatHistory.slice(-50);
+    }
   } catch {
     typing.classList.add('hidden');
     addChatMsg('assistant', 'Connection error — the GRID Chat webhook may be offline. Check N8N Cloud for the grid-chat workflow status.');
